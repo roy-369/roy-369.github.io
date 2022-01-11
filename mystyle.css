@@ -1,7 +1,8 @@
 body {
     position:relative; 
     width: 70%;
-    left:260px;  
+    left:0px;  
+    margin:0 auto;
     background-color:white;
 }
 
@@ -21,7 +22,6 @@ aside > p {
 }
 
 figcaption {
-
     font-style: italic;
     color: #29627e;
 }
