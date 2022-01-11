@@ -1,0 +1,77 @@
+\documentclass[11pt]{article}
+\usepackage[margin=3cm]{geometry}
+\geometry{margin=1in, headsep=0.25in}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{physics}
+\usepackage{graphicx}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}{Corollary}[thm]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{eg}{Example}[section]
+\newtheorem{definition}{Definition}[section]
+\usepackage{bbold}
+\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, automata, positioning, quotes, shapes}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=cyan,
+}
+\urlstyle{same}
+\usepackage[sort&compress,numbers]{natbib}
+\bibliographystyle{naturemag}
+\usepackage{doi}
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\title{An Interesting Proof of Pauli Identity}
+\author{Shi Feng}
+\date{}
+\begin{document}
+\maketitle
+\begin{thm}
+	Pauli Identity:	
+\begin{equation}
+	\sum_{a = 1,2,3}\sigma_{\alpha\beta}^a\sigma_{\gamma\delta}^a = 2\delta_{\alpha\delta}\delta_{\beta\gamma} -\delta_{\alpha\beta}\delta_{\gamma\delta} 
+\end{equation}
+with $\sigma$ the pauli matrices.
+\end{thm}
+\begin{proof}
+The great orthoganality theorm can be used to prove this:
+\begin{equation}
+	\sum_{a = 1,2,3}\sigma_{\alpha\beta}^a\sigma_{\gamma\delta}^a = 2\delta_{\alpha\delta}\delta_{\beta\gamma} -\delta_{\alpha\beta}\delta_{\gamma\delta} 
+\end{equation}
+where $\sigma$ are pauli matrices. Note that 2-by-2 Pauli matrices belongs to irreducible representation of SU(2), so we can apply the theorem directly to Pauli group:
+\begin{equation}
+	G_{P} = \{ \pm I, \pm \sigma^x, \pm \sigma^y, \pm \sigma^z, \pm iI, \pm i\sigma^x, \pm i\sigma^y, \pm i\sigma^z \}
+\end{equation}
+Now we apply the GOT:
+\begin{equation}
+	\sum_{g\in G_P}D^\dagger(g)_{\alpha\beta}D(g)_{\gamma\delta} = 8 \delta_{\alpha\delta}\:\delta_{\gamma\beta} 
+\end{equation}
+Note that $\pm$ and $i$ has no effect on the L.H.S. due to the mutiplication with the complex conjuate, the summation $\sum_{g\in G_p}$ can be divided into 4 identical sums, of which we are interested the subset $P = \{I, \sigma^x, \sigma^y, \sigma^z\}$. This gives:
+\begin{equation}
+	\sum_{g\in P} D^\dagger(g)_{\alpha\beta}D(g)_{\gamma\delta} = 2\delta_{\alpha\delta}\delta_{\gamma\beta} 
+\end{equation}
+we can separate out the identity $I$ out of the sum, that is, whcih gives us  $\delta_{\alpha\beta}\delta_{\gamma\delta}$ on the L.H.S., and write the representation explicit by pauli matrices $\sigma$:
+\begin{equation}
+	\delta_{\alpha\beta}\delta_{\gamma\delta} + \sum_{a}\sigma_{\alpha\beta}^a \sigma_{\gamma\delta}^a = 2\delta_{\alpha\delta}\delta_{\gamma\beta}
+\end{equation}
+rearrange and we have the desired form:
+\begin{equation}
+	\sum_{a = 1,2,3}\sigma_{\alpha\beta}^a\sigma_{\gamma\delta}^a = 2\delta_{\alpha\delta}\delta_{\beta\gamma} -\delta_{\alpha\beta}\delta_{\gamma\delta} 
+\end{equation}
+
+\end{proof}
+
+
+%\nocite{*}
+%\printbibliography
+%\bibliography{references.bib}
+\end{document}

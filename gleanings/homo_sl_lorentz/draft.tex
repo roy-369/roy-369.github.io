@@ -1,0 +1,93 @@
+\documentclass[11pt]{article}
+\usepackage[margin=3cm]{geometry}
+\geometry{margin=1in, headsep=0.25in}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{physics}
+\usepackage{graphicx}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}{Corollary}[thm]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{eg}{Example}[section]
+\newtheorem{definition}{Definition}[section]
+\usepackage{bbold}
+\numberwithin{thm}{section}
+\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, automata, positioning, quotes, shapes}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=cyan,
+}
+\urlstyle{same}
+\usepackage[sort&compress,numbers]{natbib}
+\bibliographystyle{naturemag}
+\usepackage{doi}
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\title{A Homomorphism between SL(2,C) and Lorentz Group}
+\author{Shi Feng}
+\date{}
+\begin{document}
+\maketitle
+A homomorphism exist between $SL(2,\mathbb{C})$ and Lorentz group. Let  $M = \mathbb{R}^4$ be the 4-d Minkowski space with Lorentz metric:
+\begin{equation}
+	\norm{x}^2 = x_0^2 - x_1^2 - x_2^2 - x_3^2,\;\;\text{with}\;\;\; x = 
+	\begin{pmatrix}
+		x_0 \\ x_1 \\ x_2 \\ x_3
+	\end{pmatrix}
+\end{equation}
+that is, $M$ is the ordinary Minkowski space of special relativity, and we have chosen the speed of light to be unity. A Lorentz transformation, $B$, is a linear transformation of $M$ into itself which preserves the Lorentz metric:
+\begin{equation}
+	\norm{Bx}^2 = \norm{x}^2,\;\;\text{for all }x \in M
+\end{equation}
+We let $L$ denote the group of all Lorentz transformations, and call it Lorentz group.
+
+We now decribe a homomorphism from  $SL(2,\mathbb{C})$ to $L$. For this purpose we shall identity every point  $x$ in $M$ with a 2-by-2 self-adjoint matrix:
+\begin{equation}
+	x := 
+	\begin{pmatrix}
+		x_0 + x_3 & x_1 - ix_2 \\
+		x_1 + ix_2 & x_0 - x_3
+	\end{pmatrix}
+	= x_0 \mathbb{1} + x_1 \sigma_1 + x_2 \sigma_2 + x_3 \sigma_3
+\end{equation}
+which satisfies $x^\dagger = x$ and $\det(x) = \norm{x}^2 = x_0^2 - x_1^2 - x_2^2 - x_3^2$. In this notation, we have  $x_0 = 1/2\tr(x)$,  $x_3 = 1/2\tilde{\tr}(x)$ where  $\tilde{tr}$ means the difference of the diagonal.
+
+Now let  $A$ be any $2-by-2$ matrix. We define the action of the matrix $A$ on the self-adjoint matrix $x$ by
+\[
+	x \rightarrow A x A^\dagger \equiv \phi(A)x
+\] 
+where we denoted the corresponding concrete action on the vector $x$ by $\phi(A) x$. The nicity can be seen from the fact
+\[
+\left( A x A^\dagger \right)^\dagger = A^\dagger^\dagger x^\dagger A^\dagger = A x A^\dagger
+.\] 
+so the new $AxA^\dagger$ is also self-adjoint. Notice also that
+\begin{equation}
+	\norm{\phi(A)x}^2 = \det(AxA^\dagger) = \abs{\det(A)}^2 \det(x)
+\end{equation}
+is $A \in SL(2,\mathbb{C})$, then
+\begin{equation}
+	\norm{\phi(A)x}^2 = \norm{x}^2
+\end{equation}
+Therefore if $A$ is in $SL(2,\mathbb{C})$, $\phi(A)$ represents a Lorentz transformation. Notice also that
+\[
+	ABx(AB)^\dagger = ABx B^\dagger A^\dagger = A(BxB^\dagger)A^\dagger
+.\] 
+so that
+\begin{equation}
+	\phi(AB)x = \phi(A)\phi(B)x
+\end{equation}
+Thus $\phi$ is a homomorphism! Also note that $\phi(-A) = \phi(A)$ so this map is not one-to-one, i.e. $\pm A$ shall be mapped to the same Lorentz transformation by  $\phi$.
+
+
+%\nocite{*}
+%\printbibliography
+%\bibliography{references.bib}
+\end{document}
