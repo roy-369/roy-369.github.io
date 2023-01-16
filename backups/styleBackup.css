@@ -1,0 +1,27 @@
+body {
+    position:relative; 
+    width: 70%;
+    left: 0px;  
+    margin:0 auto;
+    background-color:white;
+}
+
+aside {
+    width: 35%;
+    padding-left: .5rem;
+    margin-left: .5rem;
+    float: right;
+    box-shadow: inset 5px 0 5px -5px #29627e;
+    font-style: italic;
+    color: #29627e;
+}
+
+
+aside > p {
+    margin: .5rem;
+}
+
+figcaption {
+    font-style: italic;
+    color: #29627e;
+}
