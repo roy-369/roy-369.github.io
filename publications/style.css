@@ -22,6 +22,14 @@ button {
 	color: black
 	text-decoration: none;
 }
+
+figcaption {
+	padding: 30px 20%;
+}
+
+img {
+	padding: 30px 20%;
+}
 	
 .texts {
 	padding: 30px 20%;
@@ -90,6 +98,12 @@ button:hover {
 	background-color: rgba(0,136,169,0.8);
 }
 
+.center {
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 50%;
+}
 
 body {
 	position:relative; 
