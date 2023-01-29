@@ -1,0 +1,317 @@
+\documentclass[11pt]{article}
+\usepackage[margin=3cm]{geometry}
+\geometry{margin=1in, headsep=0.25in}
+\usepackage{amsmath}
+\usepackage{amsthm}
+\usepackage{amssymb}
+\usepackage{physics}
+\usepackage{graphicx}
+\newtheorem{thm}{Theorem}
+\newtheorem{lem}[thm]{Lemma}
+\newtheorem{cor}{Corollary}[thm]
+\theoremstyle{remark}
+\newtheorem*{remark}{Remark}
+\theoremstyle{definition}
+\newtheorem{eg}{Example}[section]
+\newtheorem{definition}{Definition}[section]
+\usepackage{bbold}
+\numberwithin{thm}{section}
+\usepackage{hyperref}
+\usepackage[usenames,dvipsnames]{xcolor}
+\usepackage{tikz}
+\usetikzlibrary{arrows.meta, automata, positioning, quotes, shapes}
+\hypersetup{
+	colorlinks=true,
+	linkcolor=blue,
+	filecolor=magenta,
+	urlcolor=cyan,
+}
+\urlstyle{same}
+\usepackage[sort&compress,numbers]{natbib}
+\bibliographystyle{naturemag}
+\usepackage{doi}
+\newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
+\numberwithin{equation}{section}
+\title{Spin Wave Theory}
+\author{Shi Feng}
+\date{}
+\begin{document}
+\maketitle
+\section{Magnons in Heisenberg Model}
+The Heisenberg interaction is:
+\begin{equation}
+	\textbf{S}_i\cdot\textbf{S}_j = \frac{1}{2}\left(S_i^+S_j^- + S_i^-S_j^+\right) + S_i^z S_j^z
+\end{equation}
+The Hamiltonian is:
+\begin{equation}
+	H = - \sum_{i,j}J_{ij}\left( S_i^+S_j^- + S_i^z S_j^z \right) - B \sum_{i}S_i^z  
+\end{equation}
+where $J_{ij} = J_{ji}; \;\; J_{ii} = 0$, and  $B = \frac{1}{\hbar}g_J\mu_B B_0$. Now we move to momentum space by F.T. defined as:
+\begin{equation}
+	\begin{split}
+		&S^\alpha(k) = \sum_{i}e^{-i k R_i} S_i^\alpha\\
+		&S_i^\alpha = \frac{1}{N} \sum_{k}e^{ikR_i}S^\alpha(k) 
+	\end{split}
+\end{equation}
+we did not use the symmetric Fourier coefficient since we want a clean commutation in momentum space, as derived below:
+\begin{equation}
+\begin{split}
+	[S^+(k_1), S^-(k_2)] &= \sum_{ij}e^{-ik_1 R_i - ik_2R_j}[S_i^+, S_j^-] = 2\sum_{ij}e^{-ik_1 R_i - ik_2 R_j}\delta_{ij}S_i^z\\
+			     &=2\sum_{j} e^{-i(k_1+ k_2)R_j}S_j^z = 2 S^z(k_1 + k_2) 
+\end{split}
+\end{equation}
+where we have set $\hbar = 1$. Similarly:
+ \begin{equation}
+	\begin{split}
+		[S^z(k_1), S^\pm(k_2)] &= \sum_{ij}e^{-ik_1R_i - ik_2R_j}[S_i^z, S_j^\pm] = \pm \sum_{ij}e^{-ik_1R_i - ik_2R_j} \delta_{ij}S_i^\pm \\
+				       &= \pm \sum_{j}e^{-i(k_1 + k_2)R_j}S_j^\pm = \pm S^\pm(k_1 + k_2) 
+	\end{split}
+\end{equation}
+in short:
+\begin{equation} \label{swt:3.6}
+	\boxed{[S^+(k_1), S^-(k_2)] = 2S^z(k_1+ k_2),\;\;\;[S^z(k_1), S^\pm(k_2)] = \pm S^\pm(k_1 + k_2)}
+\end{equation}
+and it's readily to see that:
+\begin{equation}
+	\boxed{\left[ S^\pm(k) \right]^\dagger = S^\mp(-k)}
+\end{equation}
+Now we are going to transform the Hamiltonian to momentum space. Generically what we need is $\mathcal{F}\{\sum_{ij}J_{ij}S_i^\alpha S_j^\beta \}$. By translational symmetry we rewrite this term as:
+\begin{equation}
+	\sum_{i, j} J_{ij} S_i^\alpha S_j^\beta = \sum_{i, r} J(r) S_i^\alpha S_{i+r}^\beta
+\end{equation}
+expand spin operator in momentum space:
+\begin{equation}
+	\begin{split}
+		& S_i^\alpha = \frac{1}{N}\sum_{k} e^{ik R_i}S^\alpha(k)\\
+		& S_{i+r}^\beta = \frac{1}{N} \sum_{k} e^{ik(R_i + r)} S^\beta(k) 
+	\end{split}
+\end{equation}
+Then we have:
+\begin{equation}
+	\begin{split}
+		\sum_{i,r} J(r) S_i^\alpha S_j^\beta &= \frac{1}{N^2} \sum_{r}J(r) \sum_{k,k'}e^{ik'r}\left(\sum_{i} e^{i(k+k')R_i} \right)  S^\alpha(k) S^\beta(k') \\
+						     &= \frac{1}{N}\sum_{r}J(r) \sum_{k} e^{-ikr} S^\alpha(k) S^\beta(-k) \\
+						     &= \frac{1}{N}\sum_{k}\left( \sum_{r}J(r)e^{-ikr}  \right) S^\alpha(k) S^\beta(-k) \\
+						     &\equiv \frac{1}{N}\sum_{k} J(k)S^\alpha(k) S^\beta(-k) 
+	\end{split}
+\end{equation}
+where we have defined $J(k) =  \sum_{r} J(r) \exp(-ikr) $, which satisfies $J(k) = J(-k)$ if it is symmetric under reflection. Note that another equivalent form is sometimes useful:
+\begin{equation}
+	J(k) = \frac{1}{N} \sum_{i,j} J_{ij} e^{-ik( R_j- R_i)} 
+\end{equation}
+there is an additional factor of $\frac{1}{N}$ due to the repeated counting of identical bonds.
+
+The on-site operator in momentum space is:
+\begin{equation}
+	\sum_{i} S_i^\alpha = \sum_{i}\frac{1}{N} \sum_{k} S^\alpha(k) e^{ik R_i} = S^\alpha(0)   
+\end{equation}
+Therefore the full Hamiltonian in momentum space is:
+\begin{equation}
+	\boxed{H = - \frac{1}{N} \sum_{k} J(k) \left\{S^+(k) S^-(-k) + S^z(k)S^z(-k)\right\} - B S^z(0) }
+\end{equation}
+Let the ground state be $\ket{S}$ that corresponds to an overall parallel orientation of all the spins, i.e. a product state with local magnetization $S$. Hence:
+\begin{equation}
+	S_i^z\ket{S} = S\ket{S},\;\;\; S^z(k) = \sum_{i} e^{ikR_i}S_i^z \ket{S} = NS\ket{S}\delta_{k,0}
+\end{equation}
+\begin{equation}
+	S_i^+ \ket{S} = 0,\;\;\; \boxed{S^+(k) \ket{S} = \sum_{i} e^{ikR_i}S_i^+\ket{S} = 0 }
+\end{equation}
+
+Now let's calculate the eigen energy. By Eq.(\ref{swt:3.6}) the first term in Hamiltonian gives:
+\begin{equation}
+	\begin{split}
+		- \frac{1}{N} \sum_{k}J(k)S^+(k)S^-(k)\ket{S} &= -\frac{1}{N}\sum_{k} J(k)\left[S^-(-k)S^+(k) + 2 S^z(0)\right] \ket{S}\\
+							     &= -\frac{1}{N}\left(\sum_{k}J(k)\right) 2NS \ket{S}\\
+							     &= -\frac{1}{N}\:NJ(r=0) NS\ket{S} = 0
+	\end{split}
+\end{equation}
+where at the 3rd row we used $\sum_{k}e^{-ikr} = N\delta_{r,0} $. While the 2nd term of Hamiltonian gives:
+\begin{equation}
+	\begin{split}
+		-\frac{1}{N}\sum_{k}J(k)S^z(k)S^z(-k)\ket{S} &= -\frac{1}{N} \sum_{k}J(k)S^z(-k)NS\delta_{k,0}\ket{S} \\
+							     &= - S J(0)S^z(0)\ket{S}\\
+							     &= -NJ(0)S^2\ket{S}
+	\end{split}
+\end{equation}
+The zeeman term is trivial. Hence we have the eigen equation:
+\begin{equation}
+	\begin{split}
+		&H\ket{S} = E_0 \ket{S}\\
+		&E_0 = -NJ(0)S^2 - NSB
+	\end{split}
+\end{equation}
+where $E_0$ is the ground state energy. 
+
+Next we show that
+\begin{equation}
+	\ket{k} \equiv S^-(k)\ket{S}
+\end{equation}
+is also an eigenstate of $H$. It's convenient to first look at the commutation $[H,S^-(k)]$:
+\begin{equation} \label{swt:3.20}
+	\begin{split}
+		[H,S^-(k)] = &-\frac{1}{N}\sum_{p}J(p)\Bigl\{ [S^+(p), S^-(k)]S^-(-p) + S^z(p)[S^z(-p),S^-(k)] + [S^z(p), S^-(k)]S^z(-p) \Bigr\} \\
+			   &- B[S^z(0), S^-(k)]\\
+		=& -\frac{1}{N}\sum_{p}J(p) \Bigl\{ 2S^z(k+p)S^-(-p) - S^z(p)S^-(k-p) - S^-(k+p)S^z(-p) \Bigr\}   + BS^-(k)
+	\end{split}
+\end{equation}
+recall that:
+\begin{equation}
+	\begin{split}
+		&[S^z(k_1), S^\pm(k_2)] = \pm S^\pm(k_1+k_2)\\
+		\Rightarrow\;\;\; & 2S^z(k+p)S^-(-p) = -2S^-(k) + 2S^-(-p)S^z(k+p)\\
+		\& \;\;\; & S^z(p)S^-(k-p) = S^-(k-p)S^z(p) - S^-(k)
+	\end{split}
+\end{equation}
+we replace the 1st and 2nd term in Eq.(\ref{swt:3.20}) by the above, hence:
+\begin{equation}
+	\begin{split}
+		[H,S^-(k)] =& BS^-(k)- \frac{1}{N}\sum_{p}J(p) \Bigl\{ -2S^-(k) + 2S^-(-p)S^z(k+p) +  \\
+			    & + S^-(k) - S^-(k-p)S^z(p) - S^-(k+p)S^z(-p)) \Bigr\} 
+	\end{split}
+\end{equation}
+Note that $\sum_{p}J(p) = NJ(r=0) = 0$, so the 1st and 3rd terms in the summation evaluate to zero. We finally find:
+\begin{equation}
+	\boxed{\left[H, S^-(k)\right] = BS^-(k) - \frac{1}{N}\sum_{p}J(p) \Bigl\{ 2S^-(-p)S^z(k+p) - S^-(k-p)S^z(p) - S^-(k+p)S^z(-p) \Bigr\} }  
+\end{equation}
+Then it's readily to apply this commutator to $\ket{S}$ and extract dispersion:
+\begin{equation}
+	[H, S^-(k)]\ket{S} = \omega(k)\left[ S^-(k)\ket{S} \right]
+\end{equation}
+\begin{equation}
+\boxed{\omega(k) = B + 2S\left[J(0) - J(k)\right]}
+\end{equation}
+in which we have used $J(k) = J(-k)$. Hence the eigen energy of state $S^-(k)\ket{S}$ is:
+\begin{equation}
+	H\Bigl(S^-(k)\ket{S}\Bigr) = \Bigl(E_0 + \omega(k)\Bigr)\ket{S} \equiv E(k)\Bigl(S^-(k)\ket{S}\Bigr)
+\end{equation}
+where we have defined the totol energy:
+\begin{equation}
+	E(k) = E_0 + B + 2S[J(0) - J(k)]
+\end{equation}
+Now we normalize the excitation:
+\begin{equation}
+	\begin{split}
+		\mel{S}{(S^-(k))^\dagger S^-(k)}{S} &= \mel{S}{S^+(-k)S^-(k)}{S}\\
+						    &= \mel{S}{2S^z(0) + S^-(k)S^+(-k)}{S}\\
+						    &= 2NS
+	\end{split}
+\end{equation}
+Therefore the Normalized single-magnon state is:
+\begin{equation}
+	\boxed{\ket{k} = \frac{1}{\sqrt{2NS}}S^-(k)\ket{S}}
+\end{equation}
+One can check [Wolfgang] which shows that magnons are bosons and carry spin-1 in a spin-1/2 system. 
+
+\section{Holstein-Primakoff transformation}
+To arrive at an approximate solution that does not use unwieldy spin operators, we would like to a representation that uses creation and annihilation operators in the second quantization. The transformation read:
+\begin{equation}
+	\begin{split}
+		& S_i^+ = \sqrt{2S}\:\phi(n_i)\:a_i\\
+		&S_i^- = \sqrt{2S}\:a^\dagger_i \:\phi(n_i)\\
+		&S_i^z = S - n_i
+	\end{split}
+\end{equation}
+where we have defined:
+\begin{equation}
+	\begin{split}
+		&n_i = a_i^\dagger a_i \\
+		&\phi(n_i) = \sqrt{1 - \frac{n_i}{2S}}
+	\end{split}
+\end{equation}
+where $a, a^\dagger$ are bosonic operators. Before going to the implemetation, let us first have a review of its historical derivation. The building blocks of a spin Hamiltonian are:
+\begin{equation}
+	S_j^+ = S_j^x + i S_j^y,\;\;\; S_j^- = S_j^x - i S_j^y,\;\;\; \hat{n}_j = S - S_j^z
+\end{equation}
+with $n_j$ the eigenvalue of $\hat{n}_j$, which is called the spin deviation of $j$-th site. For simplicity, let us consider the case in which $S_j^z$, thus  $n_l$, is a good quantum number, such that the wavefunction can be labelled by local spin deviations:
+\begin{equation}
+	 \ket{\psi} = \ket{n_1 \ldots n_l \ldots n_N}
+\end{equation}
+Now let us apply these operators to the state. The operator $S_l^+$ will raise  $S_l^z$, thus lower  $n_l$ by $1$. So we have:
+\begin{equation}
+	S_l^+ \ket{n_1\ldots n_l \ldots n_N} = c\ket{n_1\ldots n_l - 1 \ldots n_N}	
+\end{equation}
+it has to satisfy normalization condition:
+\begin{equation}
+	\abs{c}^2 = \mel{n_1\ldots n_l \ldots n_N}{S_l^- S_l^+}{n_1\ldots n_l \ldots n_N}
+\end{equation}
+in order to work under $n_l$ basis, we rewrite the $S_l^- S_l^+$ as:
+\begin{equation}
+	\begin{split}
+		S_l^- S_l^+ &= (S_l^x - iS_l^y)(S_l^x + i S_l^y) = S_l^x S_l^x + S_l^y S_l^y + iS_l^x S_l^y - iS_l^y S_l^x\\
+			    &= \textbf{S}^2 - S_l^z S_l^z + i[S_l^x, S_l^y] = S(S+1) - (S - n_l)^2 - (S - n_l)\\
+			    &= 2Sn_l - n_l(n_l - 1) \\
+			    &= (2S)\left( 1 - \frac{n_l - 1}{2S} \right) n_l
+	\end{split}	
+\end{equation}
+so that
+\begin{equation}
+	c = \sqrt{2S}\sqrt{1 - \frac{n_l - 1}{2S}}\sqrt{n_l}
+\end{equation}
+\begin{equation}
+	S_l^+ \ket{n_1\ldots n_l\ldots n_N} = \sqrt{2S}\sqrt{1 - \frac{n_l - 1}{2S}}\sqrt{n_l}\ket{n_1\ldots n_l - 1\ldots n_N}
+\end{equation}
+introducing the creation and annihilation operator $a^\dagger, a$, the above can be rewritten as:
+\begin{equation}
+	S_l^+ \ket{n_1\ldots n_l\ldots n_N} = \sqrt{2S}\sqrt{1 - \frac{\hat{n}_l}{2S}}\:\hat{a}_l\ket{n_1\ldots n_l\ldots n_N} \equiv \sqrt{2S}\:\phi(\hat{n}_l) \:\hat{a}_l
+\end{equation}
+where I have used $\hat{\bullet}$ to emphasize an operator. Hence we have the first Holstein-Primakoff transformation:
+\begin{equation}
+	S_l^+ = \sqrt{2S}\:\phi(\hat{n}_l) \:\hat{a}_l
+\end{equation}
+The mapping of $S_l^-$ can be derived in the same way. 
+
+\subsection{HP transformation of Heisenberg ferromagnet}
+In this section we will apply the symmetric Fourier transform to bosonic operators:
+\begin{equation}
+	a_k = \frac{1}{\sqrt{N}}\sum_{i} e^{-i k R_i}a_i,\;\;\; a_k^\dagger = \frac{1}{\sqrt{N}}\sum_{i} e^{ik R_i}  a_i^\dagger
+\end{equation}
+they can be interpreted as magnon annihilation or creation operators. Now we rewrite the Heisenberg Hamiltonian by bosons:
+\begin{equation}
+	S_i^+ S_j^- = \left( \sqrt{2S}\phi(n_i) a_i\right)\left( \sqrt{2S}a_j^\dagger \phi(n_j) \right) = 2S \phi(n_i) a_i a_j^\dagger \phi(n_j)
+\end{equation}
+\begin{equation}
+	S_i^z S_j^z = \left(S - n_i\right)\left(S - n_j\right) = S^2 + n_i n_j - S(n_i + n_j)
+\end{equation}
+Note that:
+\begin{equation}
+	\sum_{ij}J_{ij}S(n_i + n_j) = 2S \sum_{ij}J_{ij}n_j = 2S \sum_{i}J_{ij}\sum_{j}n_j = 2SJ(0)\sum_{j}n_j
+\end{equation}
+\begin{equation}
+	S^2 \sum_{ij}J_{ij} = S^2 \sum_{i} \left(\sum_{j} J_{ij} \right)  = N J(0) S^2
+\end{equation}
+so the Hamiltonian in boson representation is:
+\begin{equation}
+	H = E_0 + 2SJ(0)\sum_{i}n_i - 2S \sum_{ij}J_{ij}\phi(n_i)a_i a_j^\dagger \phi(n_j) - \sum_{ij}J_{ij}n_i n_j   
+\end{equation}
+To work explicitly with $H$ we have to carry out an expansion of the square root in  $\phi(n_i)$:
+\begin{equation}
+	\phi(n_i) = \sqrt{1 - \frac{n_i}{2S}} = 1 - \frac{n_i}{4S} - \frac{n_i^2}{32 S^2} - O(S^{-3})
+\end{equation}
+The transformation is thus only reasonable when there is a physical justification for terminating the infinite series. The simplest approximation is the spin-wave approximation, where we only keep $n_i$ to its lowest (linear) power. This can be justified at low temperatures, at which only a few magnons are excited. To show this, we first approximate:
+\[
+	\phi(n_i) \simeq 1 - \frac{n_i}{2S}
+.\] 
+and plug into Hamiltonian and keep the linear only. 
+\begin{equation}
+	\begin{split}
+		H &= E_0 + 2SJ(0)\sum_{i}n_i - 2S\sum_{ij}J_{ij}\left(1 - \frac{n_i}{2S}\right) a_i a_j^\dagger\left(1 - \frac{n_i}{2S}\right) - \sum_{ij}J_{ij}n_i n_j \\
+		  &= E_0 + 2SJ(0)\sum_{i}n_i - \sum_{ij}J_{ij}\left( 2S a_i a_j^\dagger - \frac{n_i}{2}a_i a_j^\dagger - \frac{a_i a_j^\dagger}{2} n_j + \frac{1}{8S}n_ia_i a_j^\dagger n_j \right)  - \sum_{ij}J_{ij}n_i n_j \\
+		  &\simeq E_0 + 2SJ(0)\sum_{ij}n_i\delta_{ij} - 2S\sum_{ij}J_{ij}a_i a_j^\dagger\\
+		  &= E_0 + 2S \sum_{ij}\left( J(0)\delta_{ij} - J_{ij} \right) a_i^\dagger a_j
+	\end{split}
+\end{equation}
+where in the last step we have switch the order of $a_i$ and $a_j^\dagger$ and swapped their indices. This will not introduce the $1 = [a_i, a_i^\dagger]$ since it is mutiplied by $J_{ii} = 0$. Then it is readily to diagonalize by a F.T.
+\begin{equation}
+	H = E_0 + \sum_{k}\omega(k) a_k^\dagger a_k 
+\end{equation}
+with
+\begin{equation}
+	\omega(k) = 2S\left(J(0) - J(k)\right)
+\end{equation}
+
+
+
+%\nocite{*}
+%\printbibliography
+%\bibliography{references.bib}
+\end{document}
