@@ -1,0 +1,3459 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"  
+  "http://www.w3.org/TR/html4/loose.dtd">  
+<html > 
+<head><title>Markov Chain Monte Carlo:
+From theory to method</title> 
+<meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1"> 
+<meta name="generator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<meta name="originator" content="TeX4ht (http://www.tug.org/tex4ht/)"> 
+<!-- html --> 
+<meta name="src" content="mcmc.tex"> 
+<link rel="stylesheet" type="text/css" href="mcmc.css"> 
+</head><body 
+>
+<div class="maketitle">
+_________________________________________________________________________________________
+
+<h2 class="titleHead">MARKOV CHAIN MONTE CARLO:<br />
+FROM THEORY TO METHOD</h2>______________________________________________________________
+           <div class="author" > <span 
+class="ptmb8t-">Deqian Kong</span>
+<br />           Department of Statistics
+<br />University of California, Los Angeles
+<br />           Los Angeles, CA 90095
+<br />          <span 
+class="ectt-1000">deqiankong@ucla.edu</span><br /> &#x00A0;
+<br />
+             <span 
+class="ptmb8t-">Shi Feng</span><span 
+class="cmsy-7">*</span>
+<br /> Department of Physics
+<br />The Ohio State University
+<br />   Columbus, OH 43210<br /> 
+<span 
+class="ectt-1000">feng.934@osu.edu</span><br /> </div>
+<br />
+<div class="thanks" ><br /><a 
+ id="tk-1"></a><span class="thank-mark"><span 
+class="ptmr8c-">*</span></span>This is a pedagogical paper on MCMC</div></div>
+<h3 class="sectionHead"><span class="titlemark">1    </span> <a 
+ id="x1-10001"></a>Introduction</h3>
+<!--l. 44--><p class="noindent" >The essence of Markov Chain Monte Carlo (MCMC) method is to solve a problem by mapping it onto an iterative
+sampling problem of statistics, whereby the sampling procedure is governed by an engineered kernel so that the
+iteration converges to the result of the original problem. This is particularly useful when dealing with problems
+which have exponentially large searching space which makes them hard to solve by enumeration, or where
+there is a computational wall that is hard to penetrate by existing algorithms, like exactly diagonalizing a huge
+Hamiltonian.
+<!--l. 46--><p class="noindent" >Although MCMC is widely used to simulate statistical ensembles (e.g. thermal average), the target of the original problem need
+not have statistical essence (e.g. Finding the ground state wavefunction of a Hamiltonian). In the latter case, iterations in
+MCMC serves as a statistical detour around the computational wall that stands between the destination and the starting point,
+and may be perceived as a useful intermediary redundancy which is ultimately to be removed by convergence at the fixed
+point.
+<!--l. 48--><p class="noindent" ><span id="textcolor1">Feng: add more examples in physics</span>
+<!--l. 54--><p class="noindent" ><span 
+class="ptmri8t-">What does a physicist mean by </span>sampling<span 
+class="ptmri8t-">?</span>
+<!--l. 56--><p class="noindent" >Statisticians and physicists use the word sampling not in exactly the same convention. In the view of a physicist (dummy
+physicist like Shi), sampling simply means imposing an observable operator (a Hermitian matrix) <span 
+class="cmmi-10">Ô</span> on a system&#8217;s Hilbert space
+for multiple times, which involves an average over either quantum or thermal ensemble, or both. In other words, given an
+observable <span 
+class="cmmi-10">Ô</span>, some information is inevitably coarse-grained by the sampling thus not detectable even though the statistical
+mechanics of the underlying microscopics are well-modeled. This perception is a top-down picture, whereby details of the
+system cannot be thoroughly pinned down as we stand at the top side, and the sampled data are perceived as
+shadows of true physical laws distorted and coarse-grained by probes. Such deficiency of physical sampling will
+always be with us, and every physicist has to learn to live with it. Nonetheless, as statisticians will tell us in
+MCMC, we sometimes can utilize this fact as our strengths to give predictions of physical properties with decent
+accuracy.
+                                                                                         
+                                                                                         
+<!--l. 60--><p class="noindent" ><span 
+class="ptmri8t-">What does a statistician mean by </span>sampling<span 
+class="ptmri8t-">?</span>
+<!--l. 62--><p class="noindent" >A statistician will argue, as the resolution of our probe will never be enough to pin down every detail of the underlying
+mechanics, why not just coarse-grain the theory at the first place, thus calculations can be rendered easier. Hence, in statistics,
+sampling means the selection of a subset of all theoretical elements, or rather, distributions, to resemble the essence of the
+theory such that we can give a good enough prediction with lower cost. The simplest example will be the uniform random
+sampling.
+<!--l. 65--><p class="noindent" >Suppose we want to evaluate the integral:
+<table 
+class="equation"><tr><td><a 
+ id="x1-1001r1"></a>
+<center class="math-display" >
+<img 
+src="mcmc0x.png" alt="    &#x222B;
+J =   f(x)p(x)dx
+" class="math-display" ></center></td><td class="equation-label">(1.1)</td></tr></table>
+<!--l. 68--><p class="nopar" >
+where <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>is a probability density distribution, <span 
+class="cmmi-10">f</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>is some physical property that is dependent on microscopic states <span 
+class="cmmi-10">x</span>.
+Naively all we need to do is evaluate the integral by brute force and get the number output. But instead of doing such a verbose
+calculation, a simpler way is to obtain independent and <span 
+class="ptmri8t-">evenly distributed </span>samples <span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmmi-10">&#x2026;</span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">N</span></sub><span 
+class="cmsy-10">} </span>from <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span>, and
+calculate
+<table 
+class="equation"><tr><td><a 
+ id="x1-1002r2"></a>
+<center class="math-display" >
+<img 
+src="mcmc1x.png" alt="    &#x2211;N
+J =    f(xi)p(xi)&#x2215;N
+     i
+" class="math-display" ></center></td><td class="equation-label">(1.2)</td></tr></table>
+<!--l. 73--><p class="nopar" >
+But the problem with this method is that the sampling resolution has to be extremely sharp when the density of states is huge
+somewhere. Hence if the theoretical distribution <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>is spiky at a few <span 
+class="cmmi-10">x</span>, we have to make significantly more sample points in
+order to tackle those peaks, even though the rest of <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>are flat that doesn&#8217;t cost much. There is another preferred way that
+addresses this problem, whereby samples are picked up in such a way that they resembles the key information of the continuous
+distribution <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span>, thus <span 
+class="cmmi-10">J </span>can be evaluated by
+<table 
+class="equation"><tr><td><a 
+ id="x1-1003r3"></a>
+<center class="math-display" >
+                                                                                         
+                                                                                         
+<img 
+src="mcmc2x.png" alt="    N
+J = &#x2211; f (xi)&#x2215;N
+    i
+" class="math-display" ></center></td><td class="equation-label">(1.3)</td></tr></table>
+<!--l. 77--><p class="nopar" >
+which should give a decent approximation of the original theory. In case of the canonical ensemble with Boltzmann
+distribution, the probability density <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">&#x221D;</span> <span 
+class="cmr-10">exp</span><img 
+src="mcmc3x.png" alt="{- &#x03B2;E }"  class="left" align="middle"> has most of its weight close to <span 
+class="cmmi-10">E </span><span 
+class="cmr-10">= 0</span>, and a thin, long tail at higher <span 
+class="cmmi-10">E</span>.
+Hence to do the aforesaid sampling, the subset of points that we need to pick up from <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>need to concentrate more at low
+energy and become sparse at high energy, so the essential information is captured. In MCMC, it is equivalent
+to
+<table 
+class="equation"><tr><td><a 
+ id="x1-1004r4"></a>
+<center class="math-display" >
+<img 
+src="mcmc4x.png" alt="   &#x2211;N
+J =   f (xt)&#x2215;N
+   t=0
+" class="math-display" ></center></td><td class="equation-label">(1.4)</td></tr></table>
+<!--l. 81--><p class="nopar" >
+where each <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub> is a configuration sampled at time <span 
+class="cmmi-10">t </span>generated by some MCMC kernel, and it is expected to converge to the true
+<span 
+class="cmmi-10">J </span>when <span 
+class="cmmi-10">N </span>is large enough. This is exactly what the pioneers of MCMC in physics community did in <span class="cite">[<span 
+class="ptmb8t-">?</span>]</span> where authors used
+such nonuniform sampling to calculate thermal averages in canonical ensembles.
+<!--l. 90--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">2    </span> <a 
+ id="x1-20002"></a>Markov Chain Basics</h3>
+<!--l. 91--><p class="noindent" >In this section we introduce the generic routine of MCMC, that is, to find a iteration kernel <span 
+class="cmmi-10">K </span>that leads to the
+convergence to desired result, in which the final fixed point must satisfy the detailed balance condition (thus a global
+balance).
+<!--l. 93--><p class="noindent" >The current state in a Markov chain only depends on the most recent previous states, i.e,
+<center class="math-display" >
+<img 
+src="mcmc5x.png" alt="P(Xt|Xt-1.Xt- 2,...,X0) = P (Xt|Xt -1)
+" class="math-display" ></center>
+<div class="newtheorem">
+<!--l. 95--><p class="noindent" ><span class="head">
+<a 
+ id="x1-2001r1"></a>
+                                                                                         
+                                                                                         
+<span 
+class="ptmb8t-">Definition 2.1 </span>(Markov Chain)<span 
+class="ptmb8t-">.</span>  </span><span 
+class="cmmi-10">MC </span><span 
+class="cmr-10">= (&#x03A9;</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc6x.png" alt="&#x02C6;v"  class="circ" > <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc7x.png" alt="K&#x02C6;"  class="circ" ><span 
+class="cmr-10">)</span>, where <span 
+class="cmr-10">&#x03A9; </span>is the state space, <img 
+src="mcmc8x.png" alt="&#x02C6;v"  class="circ" > <sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmr-10">: &#x03A9; </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="msbm-10">&#x211D; </span>is the initial probability
+distribution function over the states, <img 
+src="mcmc9x.png" alt="K&#x02C6;"  class="circ" > <span 
+class="cmr-10">: &#x03A9; </span><span 
+class="cmsy-10">&#x00D7; </span><span 
+class="cmr-10">&#x03A9; </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="msbm-10">&#x211D; </span>is the transition probability function. Where the hats on <img 
+src="mcmc10x.png" alt="&#x02C6;K"  class="circ" > and
+<img 
+src="mcmc11x.png" alt="&#x02C6;v"  class="circ" ><sub><span 
+class="cmr-7">0</span></sub> are used to emphasize they are essentially maps instead of numbers.
+</div>
+<!--l. 99--><p class="noindent" ><span 
+class="ptmri8t-">Remark: </span>In many places the Markov Chain are defined without hats as <span 
+class="cmmi-10">MC </span><span 
+class="cmr-10">= (&#x03A9;</span><span 
+class="cmmi-10">,v</span><sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">,K</span><span 
+class="cmr-10">)</span>. This may lead to the confusion in
+expression like <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">K </span>as it is usually written. Because maps do not multiply, but only interact via composition i.e. <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmsy-10">&#x2218; </span><span 
+class="cmmi-10">K</span>. Yet
+most of times <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">K </span>are used to describe the probability distribution, which is a tuple of real numbers instead of a
+composite map. Therefore we use the hats to distinguish probability distribution from probability distribution
+function. In the forthcoming texts, we will denote the evaluated probability function by lower case letters. For
+example
+<table 
+class="equation-star"><tr><td>
+                                 <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmr-10">=</span> <img 
+src="mcmc12x.png" alt="v&#x02C6;"  class="circ" > <sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmsy-10">&#x22C5; </span><span 
+class="cmr-10">&#x03A9;</span><span 
+class="cmmi-10">,K </span><span 
+class="cmr-10">=</span> <img 
+src="mcmc13x.png" alt="K&#x02C6;"  class="circ" > <span 
+class="cmsy-10">&#x22C5; </span><span 
+class="cmr-10">(&#x03A9; </span><span 
+class="cmsy-10">&#x00D7; </span><span 
+class="cmr-10">&#x03A9;)</span>
+</td></tr></table>
+<!--l. 102--><p class="nopar" >
+where <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> and <span 
+class="cmmi-10">K </span>can be perceived as real-valued vector and matrix. Elements in vector <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> are real-valued probability of all
+configurations <span 
+class="cmmi-10">&#x03C9;</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>, and elements in matrix <span 
+class="cmmi-10">K </span>are conditional probabilities that connect pairs of configurations.
+<a 
+ id="x1-2002r1"></a>
+<!--l. 107--><p class="noindent" ><span 
+class="ptmb8t-">Example</span><span 
+class="ptmb8t-">&#x00A0;1 </span>In the simplest Ising model on an <span 
+class="cmmi-10">a </span><span 
+class="cmsy-10">&#x00D7; </span><span 
+class="cmmi-10">b </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">N </span>sites with <span 
+class="cmmi-10">S</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">±</span><span 
+class="cmr-10">1</span>, the state space <span 
+class="cmr-10">&#x03A9; </span>is the collection of
+all configurations i.e. <span 
+class="cmr-10">&#x03A9; =</span> <span 
+class="cmex-10">&#x2297;</span>
+  <sup><span 
+class="cmmi-7">N</span></sup><span 
+class="msbm-10">&#x2124;</span><sub><span 
+class="cmr-7">2</span></sub>, with the total number of states <span 
+class="cmr-10">#&#x03A9; = 2</span><sup><span 
+class="cmmi-7">N</span></sup>. Each element <span 
+class="cmmi-10">&#x03C9; </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9; </span>is a <span 
+class="cmmi-10">N</span>
+dimensional tuple whose elements have value <span 
+class="cmsy-10">±</span><span 
+class="cmr-10">1</span>. The initial probability distribution is denoted by the evaluated
+probability function <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub>, a real-valued tuple, where the subscript <span 
+class="cmr-10">0 </span>says that the probability distribution is at
+zeroth iteration. Of course the initial probability distribution <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> is arbitrary thus not the desired distribution
+which we are trying to sample. Our goal is then to find a way to evolve <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> to <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmmi-10">&#x2026;</span><span 
+class="cmmi-10">,v</span><sub><span 
+class="cmmi-7">n</span></sub>, hoping such a series
+would ultimately converge to the true probability distribution, e.g. the Boltzmann weights <span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;E</span><sub><span 
+class="cmmi-5">&#x03C9;</span></sub></sup> for the Ising
+model in a canonical ensemble. This evolution of probability distribution is described by the aforementioned <span 
+class="cmmi-10">K</span>.
+<!--l. 115--><p class="noindent" >At time <span 
+class="cmmi-10">n</span>, the Markov Chain state will follow a probability for finite states, and the state converge to an invariant
+probability,
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                              <span 
+class="cmmi-10">v</span><sub><span 
+class="cmmi-7">n</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">K</span><sup><span 
+class="cmmi-7">n</span></sup> and  <span 
+class="cmr-10">lim</span><sub>
+<span 
+class="cmmi-7">n</span><span 
+class="cmsy-7">&#x2192;&#x221E;</span></sub><span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">K</span><sup><span 
+class="cmmi-7">n</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span>
+</td></tr></table>
+<!--l. 116--><p class="nopar" >
+Our objective is to design a Markov chain kernel <span 
+class="cmmi-10">K</span>, such that <span 
+class="cmmi-10">&#x03C0; </span>is the unique, invariant probability of <span 
+class="cmmi-10">K </span>(a fixed point).
+Suppose we are given <span 
+class="cmr-10">&#x03A9; </span>and a target probability <span 
+class="cmmi-10">&#x03C0; </span><span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc14x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,&#x03C0;</span><sub><span 
+class="cmmi-7">N</span></sub><span 
+class="cmr-10">)</span><sub><span 
+class="cmr-7">(1</span><span 
+class="cmsy-7">&#x00D7;</span><span 
+class="cmmi-7">N</span><span 
+class="cmr-7">)</span></sub>, our goal is to design <span 
+class="cmmi-10">v</span><sub><span 
+class="cmr-7">0</span></sub> and <span 
+class="cmmi-10">K </span>so that <span 
+class="cmmi-10">&#x03C0;K </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span>,
+which is a necessary condition.
+<!--l. 119--><p class="noindent" >Here we check the conditions for topology of transition matrix:
+       <ul class="itemize1">
+       <li class="itemize">stochastic matrix: <span 
+class="cmex-10">&#x2211;</span>
+  <sub><span 
+class="cmmi-7">j</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">N</span></sup><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmr-10">= 1</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span><span 
+class="cmmi-10">,K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmsy-10">&#x2265; </span><span 
+class="cmr-10">0 </span>or <span 
+class="cmmi-10">K</span><span 
+class="cmbx-10">1</span><sub><span 
+class="cmmi-7">N</span><span 
+class="cmsy-7">&#x00D7;</span><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">1</span>
+       </li>
+       <li class="itemize">global balance: <span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmr-7">1</span><span 
+class="cmsy-7">&#x00D7;</span><span 
+class="cmmi-7">N</span></sub><span 
+class="cmmi-10">K </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span>, <span 
+class="cmex-10">&#x2211;</span>
+  <sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">N</span></sup><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">j</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">j </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>
+       </li>
+       <li class="itemize">detailed balance(<span 
+class="ptmri8t-">reversible</span>): <span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">j</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ji</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">i,j </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>
+       <!--l. 125--><p class="noindent" >We should know that the detailed balance is a sufficient but not necessary condition for global balance and we should
+       know detailed balance indicates stationarity and in particular global balance,
+       <table 
+class="equation-star"><tr><td>
+                        <span 
+class="cmmi-10">&#x03C0;K </span><span 
+class="cmr-10">=</span>  <span 
+class="cmmi-7">n</span>
+ <span 
+class="cmex-10">&#x2211;</span>
+ <span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span> <span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">[</span><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc15x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,K</span><sub><span 
+class="cmmi-7">iN</span></sub><span 
+class="cmr-10">] =</span>  <span 
+class="cmmi-7">n</span> <span 
+class="cmex-10">&#x2211;</span>
+ <span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span><span 
+class="cmr-10">[</span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmr-7">1</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc16x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,&#x03C0;</span><sub><span 
+class="cmmi-7">N</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">Ni</span></sub><span 
+class="cmr-10">] = </span><span 
+class="cmmi-10">&#x03C0;</span>
+       </td></tr></table>
+       <!--l. 126--><p class="nopar" >
+       <table 
+class="equation-star"><tr><td>
+                                <span 
+class="cmex-10">&#x2211;</span>
+                                   <sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">N</span></sup><span 
+class="cmmi-10">&#x03C0;</span><sub>
+<span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">j</span></sub> <span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">N</span></sup><span 
+class="cmmi-10">K</span><sub>
+<span 
+class="cmmi-7">ji</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><sub><span 
+class="cmmi-7">j</span></sub>
+       </td></tr></table>
+       <!--l. 127--><p class="nopar" >
+                                                                                         
+                                                                                         
+       </li>
+       <li class="itemize">irreducibility: A Markov Chain is irreducible if its transition matrix <span 
+class="cmmi-10">K </span>has only one communication class. <span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmmi-10">j</span>,
+       denotes a state <span 
+class="cmmi-10">j </span>is accessible from <span 
+class="cmmi-10">i</span>, if there exists a finite step <span 
+class="cmmi-10">M</span>, such that
+       <table 
+class="equation-star"><tr><td>
+                        <span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub><sup><span 
+class="cmmi-7">M</span></sup> <span 
+class="cmr-10">=</span> <span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmr-5">1</span></sub><span 
+class="cmmi-7">,i</span><sub><span 
+class="cmr-5">2</span></sub><span 
+class="cmmi-7">,</span><img 
+src="mcmc17x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-7">,i</span><sub><span 
+class="cmmi-5">M</span><span 
+class="cmsy-5">-</span><span 
+class="cmr-5">1</span></sub></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ii</span><sub><span 
+class="cmr-5">1</span></sub></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmr-5">1</span></sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmr-5">2</span></sub></sub><img 
+src="mcmc18x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmmi-5">M</span><span 
+class="cmsy-5">-</span><span 
+class="cmr-5">2</span></sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmmi-5">M</span><span 
+class="cmsy-5">-</span><span 
+class="cmr-5">1</span></sub></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">i</span><sub><span 
+class="cmmi-5">M</span><span 
+class="cmsy-5">-</span><span 
+class="cmr-5">1</span></sub><span 
+class="cmmi-7">j</span></sub> <span 
+class="cmmi-10">&#x003E; </span><span 
+class="cmr-10">0</span>
+       </td></tr></table>
+       <!--l. 128--><p class="nopar" >
+       <span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2194; </span><span 
+class="cmmi-10">j </span>generates a partition of the state space into disjoint equivalence(communication) classes given by
+       <span 
+class="cmr-10">&#x03A9; = </span><span 
+class="cmsy-10">&#x222A;</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">C</span></sup><span 
+class="cmr-10">&#x03A9;</span><sub><span 
+class="cmmi-7">i</span></sub> and one communication class means all the states are accessible from each other
+       </li>
+       <li class="itemize">Aperiodicity: to define this, we need to define a periodic MC first. An irreducible MC with transition matrix <span 
+class="cmmi-10">K </span>has
+       period <span 
+class="cmmi-10">d </span>if there is a unique patition of graph <span 
+class="cmmi-10">G </span>into cyclic classes:
+       <table 
+class="equation-star"><tr><td>
+                               <span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,C</span><sub><span 
+class="cmr-7">2</span></sub><img 
+src="mcmc19x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,C</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmmi-7">j</span><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmmi-7">C</span><sub><span 
+class="cmmi-5">k</span></sub></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ij</span></sub> <span 
+class="cmr-10">= 1</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">C</span><sub><span 
+class="cmmi-7">k</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span></sub>
+       </td></tr></table>
+       <!--l. 131--><p class="nopar" >
+       In an periodic Markov Chain there is no connection between states within each individual cyclic class, and
+       an irreducible Markov chain with transition matrix <span 
+class="cmmi-10">K </span>is aperiodic if it&#8217;s largest period is <span 
+class="cmmi-10">d </span><span 
+class="cmr-10">= 1</span>.
+       </li>
+       <li class="itemize">stationarity distribution: A Markov chain with transition kernel <span 
+class="cmmi-10">K </span>has stationary distribution <span 
+class="cmmi-10">&#x03C0; </span>if
+       <table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                                             <span 
+class="cmmi-10">&#x03C0;K </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span>
+       </td></tr></table>
+       <!--l. 134--><p class="nopar" >
+       There may be many stationary distributions w.r.t <span 
+class="cmmi-10">K</span>. Even if there is a stationary distribution, a Markov chain
+       may not always converge to it.</li></ul>
+<div class="newtheorem">
+<!--l. 138--><p class="noindent" ><span class="head">
+<a 
+ id="x1-2003r1"></a>
+<span 
+class="ptmb8t-">Theorem 2.1 </span>(Perron-Frobenius*)<span 
+class="ptmb8t-">.</span>  </span><span 
+class="ptmri8t-">For any primitive (irreducible and aperiodic) </span><span 
+class="cmmi-10">N </span><span 
+class="cmsy-10">&#x00D7; </span><span 
+class="cmmi-10">N </span><span 
+class="ptmri8t-">stochastic matrix </span><span 
+class="cmmi-10">K</span><span 
+class="ptmri8t-">, with</span>
+<span 
+class="ptmri8t-">eigenvalues</span>
+<table 
+class="equation-star"><tr><td>
+                                    <span 
+class="cmmi-10">&#x03BB;</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmmi-10">&#x003E; </span><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">&#x03BB;</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmsy-10">| </span><span 
+class="cmmi-10">&#x003E;</span> <img 
+src="mcmc20x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" > <span 
+class="cmmi-10">&#x003E; </span><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">&#x03BB;</span><sub><span 
+class="cmmi-7">r</span></sub><span 
+class="cmsy-10">|</span>
+</td></tr></table>
+<!--l. 140--><p class="nopar" >
+<span 
+class="ptmri8t-">and multiplicities as </span><span 
+class="cmmi-10">m</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,m</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc21x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,m</span><sub><span 
+class="cmmi-7">r</span></sub><span 
+class="ptmri8t-">, with </span><span 
+class="cmmib-10">u</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;,</span><span 
+class="cmmib-10">v</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">1 </span><span 
+class="ptmri8t-">has the biggest eigenvalue </span><span 
+class="cmmi-10">&#x03BB; </span><span 
+class="cmr-10">= 1 </span><span 
+class="ptmri8t-">with </span><span 
+class="cmmi-10">m</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">= 1</span><span 
+class="ptmri8t-">.</span>
+</div>
+<!--l. 142--><p class="noindent" >Proofs can be found <a 
+href="http://people.math.harvard.edu/~knill/teaching/math19b_2011/handouts/lecture34.pdf" >here</a> in both numerical(<span 
+class="cmmi-10">tr</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">K</span><span 
+class="cmr-10">) =</span> <span 
+class="cmex-10">&#x2211;</span><span 
+class="cmmi-7">n</span>
+    <span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span> <span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">ii</span></sub> <span 
+class="cmr-10">=</span> <span 
+class="cmex-10">&#x2211;</span><span 
+class="cmmi-7">r</span>
+    <span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span> <span 
+class="cmmi-10">m</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">&#x03BB;</span><sub><span 
+class="cmmi-7">i</span></sub>) and geometric perspective(by defining sphere
+<span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><sup><span 
+class="cmr-7">2</span></sup> <span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><sup><span 
+class="cmr-7">2</span></sup> <span 
+class="cmr-10">+</span> <img 
+src="mcmc22x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" > <span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">n</span></sub><sup><span 
+class="cmr-7">2</span></sup> <span 
+class="cmr-10">= 1</span>). More detailed one can be found <a 
+href="http://pi.math.cornell.edu/~web6720/Perron-Frobenius_Hannah%20Cairns.pdf" >here</a>.
+<!--l. 144--><p class="noindent" >For a square matrix, we have eigen decomposition as <span 
+class="cmmi-10">K </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">&#x039B;</span><span 
+class="cmmi-10">Q</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span> and as <span 
+class="cmmi-10">n </span><span 
+class="cmsy-10">&#x2192;&#x221E;</span>,
+<table 
+class="equation-star"><tr><td>
+                           <span 
+class="cmmi-10">K</span><sup><span 
+class="cmmi-7">n</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">&#x039B;</span><span 
+class="cmmi-10">Q</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">&#x039B;</span><sup><span 
+class="cmmi-7">n</span></sup><span 
+class="cmmi-10">Q</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span> <span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmmi-10">&#x03BB;</span><sub>
+<span 
+class="cmr-7">1</span></sub><span 
+class="cmmib-10">v</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmib-10">u</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">1</span><span 
+class="cmmi-10">&#x03C0;</span>
+</td></tr></table>
+<!--l. 145--><p class="nopar" >
+                                                                                         
+                                                                                         
+<!--l. 149--><p class="noindent" >
+<h4 class="subsectionHead"><span class="titlemark">2.1    </span> <a 
+ id="x1-30002.1"></a>A worked example of balance equations</h4>
+<!--l. 150--><p class="noindent" >The global balance equations are a set of equations that characterize the (dynamical) equilibrium distribution (or any stationary
+distribution, for example, a composite chemical system in a dynamical equilibrium).
+<!--l. 152--><p class="noindent" >Suppose at time <span 
+class="cmmi-10">t </span>we have some initial pdf configuration <span 
+class="cmmi-10">&#x03C0;</span><sup><span 
+class="cmr-7">(0)</span></sup> <span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">p</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,p</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmr-10">) </span>which may be perceived as a discrete pdf of two
+distinct chemical compounds, and the transition matrix <span 
+class="cmmi-10">K </span>is defined:
+<table 
+class="equation-star"><tr><td>
+                                     <span 
+class="cmmi-10">K </span><span 
+class="cmr-10">= </span><img 
+src="mcmc23x.png" alt="(       )
+ k11  k12
+ k21  k22"  class="left" align="middle"><span 
+class="cmmi-10">.</span>
+</td></tr></table>
+<!--l. 158--><p class="nopar" >
+that is, at time <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1 </span>the new distribution <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmsy-10">&#x2032; </span>is:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3001r1"></a>
+<center class="math-display" >
+<img 
+src="mcmc24x.png" alt="                    (k    k  )
+&#x03C0;(1) = &#x03C0; (0)K = (p1 p2) k1121  k1222  = (p1k11 + p2k21,p1k12 + p2k22)
+" class="math-display" ></center></td><td class="equation-label">(2.1)</td></tr></table>
+<!--l. 169--><p class="nopar" >
+with the row-major index notation we can write:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3002r2"></a>
+<center class="math-display" >
+<img 
+src="mcmc25x.png" alt="      &#x2211;
+&#x03C0;(1)=    &#x03C0;(0)kji,withi,j &#x2208; {1,2}
+ i     j  j
+" class="math-display" ></center></td><td class="equation-label">(2.2)</td></tr></table>
+                                                                                         
+                                                                                         
+<!--l. 173--><p class="nopar" >
+If the system reaches an equilibrium state at time <span 
+class="cmmi-10">T </span>, then the state at next moment <span 
+class="cmmi-10">T </span><span 
+class="cmr-10">+ 1 </span>should remain the same (to be precise,
+they are element-wise the same), that is:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3003r3"></a>
+<center class="math-display" >
+<img 
+src="mcmc26x.png" alt="&#x03C0;(T+1)= &#x2211;  &#x03C0;(T)kjk = &#x03C0;(T)
+ i       j  j        i
+" class="math-display" ></center></td><td class="equation-label">(2.3)</td></tr></table>
+<!--l. 177--><p class="nopar" >
+For short, we say at equilibrium we have a fixed point characterized by
+<table 
+class="equation"><tr><td><a 
+ id="x1-3004r4"></a>
+<center class="math-display" >
+<img 
+src="mcmc27x.png" alt="|------------|
+|    &#x2211;       |
+|&#x03C0;i =   &#x03C0;jkji|
+------j------
+" class="math-display" ></center></td><td class="equation-label">(2.4)</td></tr></table>
+<!--l. 181--><p class="nopar" >
+In the context of probability theory, let <span 
+class="cmr-10">&#x03A9; </span>be the total state space, and let <span 
+class="cmbx-10">a</span><span 
+class="cmmi-10">,</span><span 
+class="cmbx-10">b </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9; </span>be two different states. Suppose at time <span 
+class="cmmi-10">t </span>the
+probability for the system to stay in state <span 
+class="cmbx-10">a </span>is <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a</span><span 
+class="cmr-10">)</span>, and the probability of state <span 
+class="cmbx-10">a </span>to transit into state <span 
+class="cmbx-10">b </span>at next moment <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1 </span>is
+<span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a</span><sub><span 
+class="cmmi-7">t</span></sub> <span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmr-10">)</span>. Therefore, the probability for the system to stay in state <span 
+class="cmbx-10">b </span>at <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1 </span>and in <span 
+class="cmbx-10">a </span>at the previous moment
+is:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3005r5"></a>
+<center class="math-display" >
+<img 
+src="mcmc28x.png" alt="p(b   ,a) = p(a )p(a  &#x2192; b   )
+   t+1  t     t    t   t+1
+" class="math-display" ></center></td><td class="equation-label">(2.5)</td></tr></table>
+<!--l. 185--><p class="nopar" >
+note that we have implicitly used that <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmbx-10">b</span><span 
+class="cmr-10">) </span>is essentially a conditional distribution i.e. <span 
+class="cmmi-10">p</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmbx-10">b</span><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">&#x2261; </span><span 
+class="cmmi-10">p</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">a</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">)</span>. Now
+note that not only can <span 
+class="cmbx-10">a </span>transit to <span 
+class="cmbx-10">b</span>, but there can be many other states which have non-zero probability to transit into <span 
+class="cmbx-10">b </span>in the
+                                                                                         
+                                                                                         
+next moment. Therefore, the probability of the system to stay in state <span 
+class="cmbx-10">b </span>is
+<table 
+class="equation"><tr><td><a 
+ id="x1-3006r6"></a>
+<center class="math-display" >
+<img 
+src="mcmc29x.png" alt="        &#x2211;              &#x2211;
+p(bt+1) =   p(bt+1,nt) =   p(nt)p(nt &#x2192; bt+1)
+         n              n
+" class="math-display" ></center></td><td class="equation-label">(2.6)</td></tr></table>
+<!--l. 189--><p class="nopar" >
+Now we can identify <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmr-10">) </span>as <span 
+class="cmmi-10">v</span><sub><span 
+class="cmmi-7">b</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup>: the probability that the system be at <span 
+class="cmmi-10">b</span><span 
+class="cmsy-10">-</span>th state at the <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1</span>, and <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a</span><sub><span 
+class="cmmi-7">t</span></sub> <span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmr-10">) </span>as <span 
+class="cmmi-10">k</span><sub><span 
+class="cmmi-7">ab</span></sub>:
+the probability that the system transits from <span 
+class="cmmi-10">a</span>-th state at <span 
+class="cmmi-10">t </span>to <span 
+class="cmmi-10">b</span>-th state at <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1</span>:
+<table 
+class="equation-star"><tr><td>
+                                     <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmr-10">)</span><span 
+class="cmsy-10">&#x21D0;&#x21D2;</span><span 
+class="cmmi-10">v</span><sub><span 
+class="cmmi-7">b</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup>
+</td></tr></table>
+<!--l. 193--><p class="nopar" >
+<table 
+class="equation-star"><tr><td>
+                                    <span 
+class="cmmi-10">p</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">a</span><sub><span 
+class="cmmi-7">t</span></sub> <span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmbx-10">b</span><sub><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmr-10">)</span><span 
+class="cmsy-10">&#x21D0;&#x21D2;</span><span 
+class="cmmi-10">k</span><sub><span 
+class="cmmi-7">ab</span></sub>
+</td></tr></table>
+<!--l. 196--><p class="nopar" >
+Therefore the global interation can be written as:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3007r7"></a>
+                                                                                         
+                                                                                         
+<center class="math-display" >
+<img 
+src="mcmc30x.png" alt=" (t+1)  &#x2211;
+vb    =    v(at)kab
+        j
+" class="math-display" ></center></td><td class="equation-label">(2.7)</td></tr></table>
+<!--l. 200--><p class="nopar" >
+or in the matrix form:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3008r8"></a>
+<center class="math-display" >
+<img 
+src="mcmc31x.png" alt="v (t+1) = v(t)K
+" class="math-display" ></center></td><td class="equation-label">(2.8)</td></tr></table>
+<!--l. 204--><p class="nopar" >
+if the a fixed poin is reached at <span 
+class="cmmi-10">T </span>then:
+<table 
+class="equation"><tr><td><a 
+ id="x1-3009r9"></a>
+<center class="math-display" >
+<img 
+src="mcmc32x.png" alt="v(T) = v(T+1) = v(T)K
+" class="math-display" ></center></td><td class="equation-label">(2.9)</td></tr></table>
+<!--l. 208--><p class="nopar" >
+<!--l. 213--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">3    </span> <a 
+ id="x1-40003"></a>Statistical Error Analysis and Binning</h3>
+<!--l. 214--><p class="noindent" >Note: MCMC samples are correlated. Discuss the independent case, then discuss the correlated case. Error bar can be crucial in
+Baysian mothods. Call central limit theorem.
+                                                                                         
+                                                                                         
+<!--l. 216--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">4    </span> <a 
+ id="x1-50004"></a>The Metropolis-Hastings Algorithm</h3>
+<div class="algorithm">
+                                                                                         
+                                                                                         
+<!--l. 258--><p class="noindent" ><a 
+ id="x1-5001r1"></a><hr class="float"><div class="float" 
+>
+                                                                                         
+                                                                                         
+ <div class="caption" 
+><span class="id">Algorithm 1: </span><span  
+class="content">The Metropolis-Hastings Algorithm</span></div><!--tex4ht:label?: x1-5001r1 -->
+<span 
+class="ptmb8t-">Input: </span>Target probability distribution <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span>, current state <span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>, and the proposal probability distribution <span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span>. <span 
+class="ptmb8t-">Output:</span>
+New state <span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>.<br 
+class="newline" />1. Propose a new state y by sampling from <span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmmi-10">,y</span><span 
+class="cmr-10">)</span>.<br 
+class="newline" />2. Compute the acceptance probability:
+<table 
+class="equation-star"><tr><td>
+                              <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) =</span> <span 
+class="cmr-10">min</span><span class="bbigg"><img 
+src="mcmc33x.png" alt="("  class="left" align="middle"></span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc34x.png" alt="Q(y,x)
+Q(x,y)"  class="frac" align="middle"> <span 
+class="cmsy-10">&#x22C5;</span><img 
+src="mcmc35x.png" alt="&#x03C0;(y)
+&#x03C0;(x)"  class="frac" align="middle"><span class="bbigg"><img 
+src="mcmc36x.png" alt=")"  class="left" align="middle"></span>
+</td></tr></table>
+<!--l. 264--><p class="nopar" >
+3. With the probability <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span>, we have <span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">y</span>, otherwise <span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup>
+                                                                                         
+                                                                                         
+</div><hr class="endfloat" />
+</div>
+<!--l. 273--><p class="noindent" >As the above notations, for <span 
+class="cmmi-10">x,y </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>, we have
+<table 
+class="equation-star"><tr><td>
+                 <span 
+class="cmmi-10">K</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) = </span><img 
+src="mcmc37x.png" alt="{                           Q(y,x) &#x03C0;(y)
+ Q (x,&#x2211;y)&#x03B1; (x,y) = Q(x,y)min(1,Q(x,y) &#x22C5;&#x03C0;(x)) ify &#x2044;= x
+ 1 -   y&#x2044;=xQ (x,y)&#x03B1;(x,y)                  ify = x"  class="left" align="middle">
+</td></tr></table>
+<!--l. 278--><p class="nopar" >
+Next we want to prove this definition of transition matrix <span 
+class="cmmi-10">K </span>satisfies the detailed balance.
+<table 
+class="align-star">
+          <tr><td 
+class="align-odd"><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">K</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span></td>          <td 
+class="align-even"> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span><span 
+class="cmr-10">min</span><span class="bbigg"><img 
+src="mcmc38x.png" alt="("  class="left" align="middle"></span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc39x.png" alt="Q(y,x)
+Q(x,y)"  class="frac" align="middle"> <span 
+class="cmsy-10">&#x22C5;</span><img 
+src="mcmc40x.png" alt="&#x03C0;(y)-
+&#x03C0;(x )"  class="frac" align="middle"><span class="bbigg"><img 
+src="mcmc41x.png" alt=")"  class="left" align="middle"></span> <span 
+class="cmr-10">=</span> <span 
+class="cmr-10">min</span><span class="bbigg"><img 
+src="mcmc42x.png" alt="("  class="left" align="middle"></span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">,&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y,x</span><span 
+class="cmr-10">)</span><span class="bbigg"><img 
+src="mcmc43x.png" alt=")"  class="left" align="middle"></span></td>          <td 
+class="align-label"></td>          <td 
+class="align-label">
+          </td></tr><tr><td 
+class="align-odd"><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">K</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y,x</span><span 
+class="cmr-10">)</span></td>          <td 
+class="align-even"> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y,x</span><span 
+class="cmr-10">)</span><span 
+class="cmr-10">min</span><span class="bbigg"><img 
+src="mcmc44x.png" alt="("  class="left" align="middle"></span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc45x.png" alt="Q(x,y)
+Q(y,x)"  class="frac" align="middle"> <span 
+class="cmsy-10">&#x22C5;</span><img 
+src="mcmc46x.png" alt="&#x03C0;-(x)
+ &#x03C0;(y)"  class="frac" align="middle"><span class="bbigg"><img 
+src="mcmc47x.png" alt=")"  class="left" align="middle"></span> <span 
+class="cmr-10">=</span> <span 
+class="cmr-10">min</span><span class="bbigg"><img 
+src="mcmc48x.png" alt="("  class="left" align="middle"></span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y,x</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">,&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">)</span><span class="bbigg"><img 
+src="mcmc49x.png" alt=")"  class="left" align="middle"></span></td>          <td 
+class="align-label"></td>          <td 
+class="align-label"></td></tr></table>
+<!--l. 284--><p class="noindent" >In many cases, the target distribution is written as a Gibbs distribution or Boltzmann distribution,
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                             <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc50x.png" alt="1-
+Z"  class="frac" align="middle"><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">x</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmmi-10">,</span> or<span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc51x.png" alt="1-
+Z"  class="frac" align="middle"><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">x</span><span 
+class="cmr-7">)</span><span 
+class="cmmi-7">&#x2215;T</span></sup>
+</td></tr></table>
+<!--l. 285--><p class="nopar" >
+For simplicity let us used Gibbs for an example. While the normalizing constant is hard to compute, suppose the proposal
+probability is symmetric, i.e. <span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) = </span><span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y,x</span><span 
+class="cmr-10">)</span>, then the acceptance probability becomes
+<table 
+class="equation-star"><tr><td>
+                  <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) =</span> <span 
+class="cmr-10">min</span><span 
+class="cmr-10">(1</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc52x.png" alt="&#x03C0;(x)
+&#x03C0;(y)"  class="frac" align="middle"><span 
+class="cmr-10">) =</span> <span 
+class="cmr-10">min</span><span 
+class="cmr-10">(1</span><span 
+class="cmmi-10">,e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">x</span><span 
+class="cmr-7">)</span><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">y</span><span 
+class="cmr-7">))</span></sup><span 
+class="cmr-10">) =</span> <span 
+class="cmr-10">min</span><span 
+class="cmr-10">(1</span><span 
+class="cmmi-10">,e</span><sup><span 
+class="cmsy-7">-&#x25B3;</span><span 
+class="cmmi-7">E</span></sup><span 
+class="cmr-10">)</span>
+</td></tr></table>
+<!--l. 287--><p class="nopar" >
+In this way, if <span 
+class="cmsy-10">&#x25B3;</span><span 
+class="cmmi-10">E &#x003C; </span><span 
+class="cmr-10">0</span>, i.e. state <span 
+class="cmmi-10">y </span>has lower energy, <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) = 1</span>, and <span 
+class="cmmi-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">y</span>; if <span 
+class="cmsy-10">&#x25B3;</span><span 
+class="cmmi-10">E &#x003E; </span><span 
+class="cmr-10">0</span>, i.e. state <span 
+class="cmmi-10">x </span>has lower
+energy, <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) = </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-&#x25B3;</span><span 
+class="cmmi-7">E</span></sup>. Note that <span 
+class="cmsy-10">&#x25B3;</span><span 
+class="cmmi-10">E </span>is often computed locally as the two states <span 
+class="cmmi-10">x </span>and <span 
+class="cmmi-10">y </span>share most of their
+elements.
+<!--l. 290--><p class="noindent" >There exist other designs for the acceptance rate that guarantee the detailed balance equation, such as
+<table 
+class="equation-star"><tr><td>
+                              <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc53x.png" alt="------&#x03C0;(y)Q(y,x)------
+&#x03C0;(x)Q (x,y)+ &#x03C0;(y)Q(y,x)"  class="frac" align="middle">
+</td></tr></table>
+<!--l. 291--><p class="nopar" >
+Or more generally,
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                                    <span 
+class="cmmi-10">&#x03B1;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc54x.png" alt="--s(x,y)--
+&#x03C0;(x)Q(x,y)"  class="frac" align="middle">
+</td></tr></table>
+<!--l. 293--><p class="nopar" >
+where <span 
+class="cmmi-10">s</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,y</span><span 
+class="cmr-10">) </span>is a symmetric function.
+<!--l. 296--><p class="noindent" >With this method, we can maximize a function for optimization by slowly changing the stationary distribution <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><span 
+class="cmr-10">) </span>with
+additional temperature <span 
+class="cmmi-10">T </span>. The temperature starts from a high <span 
+class="cmmi-10">T</span><sub><span 
+class="cmr-7">0</span></sub> and decreased to 0 as <span 
+class="cmmi-10">n </span><span 
+class="cmsy-10">&#x2192;&#x221E;</span>.
+<table 
+class="equation-star"><tr><td>
+                                 <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x,T</span><sub><span 
+class="cmmi-7">n</span></sub><span 
+class="cmr-10">) =</span> <img 
+src="mcmc55x.png" alt="  1
+Z-(T-)-
+   n"  class="frac" align="middle"><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">x</span><span 
+class="cmr-7">)</span><span 
+class="cmmi-7">&#x2215;T</span><sub><span 
+class="cmmi-5">n</span></sub>
+             </sup>
+</td></tr></table>
+<!--l. 297--><p class="nopar" >
+which is known as simulated annealing method.
+<h4 class="subsectionHead"><span class="titlemark">4.1    </span> <a 
+ id="x1-60004.1"></a>Application of M-H method in Ising model</h4>
+<!--l. 302--><p class="noindent" >The first implementation of M-H algorithm is carried out in
+<!--l. 304--><p class="noindent" ><span class="cite">[<span 
+class="ptmb8t-">?</span>]</span>, whose underlying theory was given much later in <span class="cite">[<span 
+class="ptmb8t-">?</span>]</span>.
+<!--l. 307--><p class="noindent" >See example C++ code in <a 
+href="https://github.com/fengshi96/MCMC" >https://github.com/fengshi96/MCMC</a>.
+<!--l. 328--><p class="noindent" >
+<h3 class="sectionHead"><span class="titlemark">5    </span> <a 
+ id="x1-70005"></a>Gibbs Sampler</h3>
+<!--l. 329--><p class="noindent" >Gibbs sampler was created for obtaining samples from distributions that are difficult to sample. Here we use the vector form,
+and <span 
+class="cmmi-10">E</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">) </span>denotes the energy function,
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                            <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc56x.png" alt="-1
+Z"  class="frac" align="middle"><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">E</span><span 
+class="cmr-7">(</span><span 
+class="cmbx-7">x</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmmi-10">,</span><span 
+class="cmbx-10">x </span><span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc57x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>
+</td></tr></table>
+<!--l. 330--><p class="nopar" >
+<!--l. 332--><p class="noindent" >The Gibbs sampler was introduced as a stochastic version of the relaxation algorithm. In this way, we first introduce the
+relaxation algorithm, which has no no guarantees for finding the global optimum and in fact, it often gets stuck in local optima.
+<div class="algorithm">
+                                                                                         
+                                                                                         
+<!--l. 334--><p class="noindent" ><a 
+ id="x1-7001r2"></a><hr class="float"><div class="float" 
+>
+                                                                                         
+                                                                                         
+ <div class="caption" 
+><span class="id">Algorithm 2: </span><span  
+class="content">Relaxation Algorithm</span></div><!--tex4ht:label?: x1-7001r2 -->
+<span 
+class="ptmb8t-">Input:</span>Energy function <span 
+class="cmmi-10">E</span><span 
+class="cmr-10">[</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">]</span>, current state <span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc58x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmsy-10">}&#x2208; </span><span 
+class="cmr-10">&#x03A9; </span>and each <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> can have <span 
+class="cmmi-10">L </span>possible values as
+<span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,y</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc59x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,y</span><sub><span 
+class="cmmi-7">L</span></sub><span 
+class="cmsy-10">}</span>.<br 
+class="newline" /><span 
+class="ptmb8t-">Output: </span>New state <span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>.<br 
+class="newline" />1. Select an index variable <span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc60x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,d</span><span 
+class="cmsy-10">} </span>at random.<br 
+class="newline" />2. Compute
+<table 
+class="equation-star"><tr><td>
+                        <span 
+class="cmmi-10">u </span><span 
+class="cmr-10">=</span> <span 
+class="cmr-10">arg</span> <span 
+class="cmr-10">min</span><sub><span 
+class="cmmi-7">y</span><sub><span 
+class="cmmi-5">l</span></sub></sub><span class="bbigg"><img 
+src="mcmc61x.png" alt="("  class="left" align="middle"></span><span 
+class="cmmi-10">E</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmmi-7">l</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">)</span><span class="bbigg"><img 
+src="mcmc62x.png" alt=")"  class="left" align="middle"></span> <span 
+class="ptmri8t-">for</span> <span 
+class="cmmi-10">l </span><span 
+class="cmr-10">= 1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc63x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,L</span>
+</td></tr></table>
+<!--l. 340--><p class="nopar" >
+3. Let
+<table 
+class="equation-star"><tr><td>
+                               <span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">x</span><sub>
+<span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> and <span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">u</span>
+</td></tr></table>
+<!--l. 342--><p class="nopar" >
+                                                                                         
+                                                                                         
+</div><hr class="endfloat" />
+</div>
+<!--l. 346--><p class="noindent" >In formal, the goal of Gibbs sampler is to sample a joint probability,
+<table 
+class="equation-star"><tr><td>
+                             <span 
+class="cmbx-10">x </span><span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc64x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc65x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">)</span>
+</td></tr></table>
+<!--l. 347--><p class="nopar" >
+by sampling in each dimension according to the conditional probability,
+<table 
+class="equation-star"><tr><td>
+                             <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">) =</span> <img 
+src="mcmc66x.png" alt="1
+--
+Z"  class="frac" align="middle"><span 
+class="cmr-10">exp</span><img 
+src="mcmc67x.png" alt="(- E(xi|x- i))"  class="left" align="middle">
+</td></tr></table>
+<!--l. 349--><p class="nopar" >
+<div class="algorithm">
+                                                                                         
+                                                                                         
+<!--l. 355--><p class="noindent" ><a 
+ id="x1-7002r3"></a><hr class="float"><div class="float" 
+>
+                                                                                         
+                                                                                         
+ <div class="caption" 
+><span class="id">Algorithm 3: </span><span  
+class="content">Gibbs Sampler</span></div><!--tex4ht:label?: x1-7002r3 -->
+<span 
+class="ptmb8t-">Input:</span>Target Probability function <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">[</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">]</span>, current state <span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc68x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmsy-10">}&#x2208; </span><span 
+class="cmr-10">&#x03A9; </span>and each <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> can have <span 
+class="cmmi-10">L </span>possible values as
+<span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,y</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc69x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,y</span><sub><span 
+class="cmmi-7">L</span></sub><span 
+class="cmsy-10">}</span>.<br 
+class="newline" /><span 
+class="ptmb8t-">Output: </span>New state <span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;</span>.<br 
+class="newline" />1. Select an index variable <span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc70x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,d</span><span 
+class="cmsy-10">} </span>at random.<br 
+class="newline" />2. Compute conditional probability vector <span 
+class="cmbx-10">u </span><span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">u</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,u</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc71x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,u</span><sub><span 
+class="cmmi-7">L</span></sub><span 
+class="cmr-10">)</span>with
+<table 
+class="equation-star"><tr><td>
+                                     <span 
+class="cmmi-10">u</span><sub><span 
+class="cmmi-7">l</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmmi-7">l</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">)</span>
+</td></tr></table>
+<!--l. 361--><p class="nopar" >
+3. Sample <span 
+class="cmmi-10">j </span><span 
+class="cmsy-10">~ </span><span 
+class="cmbx-10">u </span>and set <span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> and <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmmi-7">j</span></sub>.
+                                                                                         
+                                                                                         
+</div><hr class="endfloat" />
+</div>
+<!--l. 365--><p class="noindent" >Here I want to point out the difference explicitly. When updating one element of the current sample, relaxation algorithm finds
+the current local minimum and Gibbs sampler samples from its distribution. We should know that only find the local minimum
+will limit the stochasticity.
+<!--l. 367--><p class="noindent" >A <span 
+class="ptmri8t-">sweep </span>of the Gibbs sampler is a sequential visit to all of the sites (variables) once. Although the transition matrix <span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">i </span>for one
+Gibbs step may not be irreducible and aperiodic, it is easy to show that the total transition matrix <span 
+class="cmmi-10">K </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">K</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">K</span><sub><span 
+class="cmr-7">2</span></sub><img 
+src="mcmc72x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span 
+class="cmmi-10">K</span><sub><span 
+class="cmmi-7">d</span></sub> does have
+these features after one sweep.
+<!--l. 370--><p class="noindent" >If we have <span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> <span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">)</span>, by above procedure,
+<table 
+class="align-star">
+                 <tr><td 
+class="align-odd"><span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup></td>                   <td 
+class="align-even"> <span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc73x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc74x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">)</span></td>                                       <td 
+class="align-label"></td>                 <td 
+class="align-label">
+                 </td></tr><tr><td 
+class="align-odd"><span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup></td>                 <td 
+class="align-even"> <span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><sub>
+<span 
+class="cmmi-7">j</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><sub><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">i</span></sub><span 
+class="cmr-10">)</span></td>                                                    <td 
+class="align-label"></td>                 <td 
+class="align-label">
+                 </td></tr><tr><td 
+class="align-odd"></td>                      <td 
+class="align-even"> <span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">y</span><sub><span 
+class="cmmi-7">j</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc75x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc76x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">)</span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc77x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc78x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">)</span></td>                 <td 
+class="align-label"></td>                 <td 
+class="align-label">
+                 </td></tr><tr><td 
+class="align-odd"><span 
+class="cmbx-10">x</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup></td>                 <td 
+class="align-even"> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc79x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmsy-7">-</span><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,y</span><sub><span 
+class="cmmi-7">j</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">+1</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc80x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">d</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">)</span></td>                                 <td 
+class="align-label"></td>                 <td 
+class="align-label"></td></tr></table>
+<h3 class="sectionHead"><span class="titlemark">6    </span> <a 
+ id="x1-80006"></a>Cluster Sampling</h3>
+<!--l. 379--><p class="noindent" >Let <span 
+class="cmsy-10"><img 
+src="cmsy10-47.png" alt="G" class="10x-x-47" /> </span><span 
+class="cmr-10">= (</span><span 
+class="cmsy-10"><img 
+src="cmsy10-56.png" alt="V" class="10x-x-56" /></span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10"><img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" /></span><span 
+class="cmr-10">) </span>be an adjacency graph. Each vertex <span 
+class="cmmi-10">v</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-56.png" alt="V" class="10x-x-56" /> </span>has a state variable <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> with a finite number of labels, i.e.
+<span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc81x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,L</span><span 
+class="cmsy-10">}</span>. If <span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= (</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">,</span><img 
+src="mcmc82x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmsy-7">|<img 
+src="cmsy7-56.png" alt="V" class="7x-x-56" />|</span></sub><span 
+class="cmr-10">) </span>denotes the labeling of the graph, the Ising (<span 
+class="cmmi-10">L </span><span 
+class="cmr-10">= 2</span>) or Potts (<span 
+class="cmmi-10">L </span><span 
+class="cmsy-10">&#x2265; </span><span 
+class="cmr-10">3</span>) model is a
+Markov Random Field,
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+                           <span 
+class="cmmi-10">&#x03C0;</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">x</span><span 
+class="cmr-10">) =</span> <img 
+src="mcmc83x.png" alt="1-
+Z"  class="frac" align="middle"><span 
+class="cmr-10">exp</span><span class="bbigg"><img 
+src="mcmc84x.png" alt="("  class="left" align="middle"></span><span 
+class="cmsy-10">-</span><span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmsy-7">&#x27E8;</span><span 
+class="cmmi-7">s,t</span><span 
+class="cmsy-7">&#x27E9;&#x2208;<img 
+src="cmsy7-45.png" alt="E" class="7x-x-45" /></span></sub><span 
+class="cmmi-10">&#x03B2;</span><sub><span 
+class="cmmi-7">st</span></sub><span 
+class="bbm-10">1</span><span 
+class="cmr-10">[</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><span 
+class="cmmi-10">&#x2260;</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">]</span><span class="bbigg"><img 
+src="mcmc85x.png" alt=")"  class="left" align="middle"></span>
+</td></tr></table>
+<!--l. 380--><p class="nopar" >
+The Swendsen-Wang (SW) algorithm introduces a set of random variables on the edges indicating if they are connected or
+not,
+<table 
+class="equation-star"><tr><td>
+                               <span 
+class="cmbx-10">U </span><span 
+class="cmr-10">=</span> <span class="bbigg"><img 
+src="mcmc86x.png" alt="{"  class="left" align="middle"></span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">0</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">1</span><span 
+class="cmsy-10">}</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">e </span><span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" /></span><span class="bbigg"><img 
+src="mcmc87x.png" alt="}"  class="left" align="middle"></span>
+</td></tr></table>
+<!--l. 382--><p class="nopar" >
+The edge is connected is <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">= 1</span>. The binary variable <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> follows a Bernoulli distribution conditional on the labels of the
+vertices <span 
+class="cmmi-10">e </span>connects, <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub> , <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub>,
+<table 
+class="equation-star"><tr><td>
+                     <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">Bernoulli</span><span class="bbigg"><img 
+src="mcmc88x.png" alt="("  class="left" align="middle"></span><span 
+class="cmr-10">(1 </span><span 
+class="cmsy-10">- </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">st</span></sub>
+      </sup><span 
+class="cmr-10">)</span><span 
+class="bbm-10">1</span><span 
+class="cmr-10">[</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub><span 
+class="cmr-10">]</span><span class="bbigg"><img 
+src="mcmc89x.png" alt=")"  class="left" align="middle"></span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">e </span><span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" /></span>
+</td></tr></table>
+<!--l. 385--><p class="nopar" >
+<span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">= 1 </span>with probability <span 
+class="cmr-10">1 </span><span 
+class="cmsy-10">- </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">st</span></sub></sup> if <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub> and <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">= 0 </span>with probability <span 
+class="cmr-10">1 </span>if <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><span 
+class="cmmi-10">&#x2260;</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub>.
+<!--l. 388--><p class="noindent" >The SW algorithm iterates the clustering and flipping step. In clustering step, given the current labeling, we calculate the
+adjacency of the graph and form a set of connected components with the same label. In flipping step, we randomly select a
+connected component and assign an arbitrary color to all the lattice inside the connected component. In this step, one may
+choose to perform the random color flipping for some or all of the connected components in <span 
+class="cmbx-10">CP</span> independently, as they are
+decoupled. By doing so, all possible labelings of the graph are connected in one step, just like one sweep of the Gibbs
+sampler.
+<div class="algorithm">
+                                                                                         
+                                                                                         
+<!--l. 393--><p class="noindent" ><a 
+ id="x1-8001r4"></a><hr class="float"><div class="float" 
+>
+                                                                                         
+                                                                                         
+ <div class="caption" 
+><span class="id">Algorithm 4: </span><span  
+class="content">Swendsen-Wang Algorithm</span></div><!--tex4ht:label?: x1-8001r4 -->
+<span 
+class="ptmb8t-">Initialize: </span>The adjacency graph <span 
+class="cmsy-10"><img 
+src="cmsy10-47.png" alt="G" class="10x-x-47" /> </span><span 
+class="cmr-10">= (</span><span 
+class="cmsy-10"><img 
+src="cmsy10-56.png" alt="V" class="10x-x-56" /></span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10"><img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" /></span><span 
+class="cmr-10">)</span>, a set of random variables for each edge as <span 
+class="cmbx-10">U </span><span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">0</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">1</span><span 
+class="cmsy-10">}</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">e </span><span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" />} </span>denoting
+their connectivity and a set of random variables denoting the label of the lattice as <span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmsy-10">&#x2208;{</span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc90x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,L</span><span 
+class="cmsy-10">}</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">i </span><span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-56.png" alt="V" class="10x-x-56" />}</span>.<br 
+class="newline" /><span 
+class="ptmb8t-">Input: </span>Current connectivity of edges <span 
+class="cmbx-10">U</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> and labeling of lattice <span 
+class="cmbx-10">X</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> at time <span 
+class="cmmi-10">t</span><br 
+class="newline" /><span 
+class="ptmb8t-">Output: </span>The connectivity of edges <span 
+class="cmbx-10">U</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> and labeling of lattice <span 
+class="cmbx-10">X</span><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> at time <span 
+class="cmmi-10">t </span><span 
+class="cmr-10">+ 1</span><br 
+class="newline" />1. the clustering step: sample the edges according to
+<table 
+class="equation-star"><tr><td>
+                 <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup><span 
+class="cmsy-10">|</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmmi-7">s</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmmi-10">,x</span><sub>
+<span 
+class="cmmi-7">t</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">Bernoulli</span><span 
+class="cmr-10">((1 </span><span 
+class="cmsy-10">- </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">st</span></sub>
+      </sup><span 
+class="cmr-10">)</span><span 
+class="bbm-10">1</span><span 
+class="cmr-10">[</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">x</span><sub>
+<span 
+class="cmmi-7">t</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmr-10">])</span><span 
+class="cmmi-10">,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">e </span><span 
+class="cmsy-10">&#x2208;<img 
+src="cmsy10-45.png" alt="E" class="10x-x-45" /></span>
+</td></tr></table>
+<!--l. 400--><p class="nopar" >
+In practice, we first let <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= 0 </span>if <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup><span 
+class="cmmi-10">&#x2260;</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">t</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">)</span></sup> for each <span 
+class="cmmi-10">e </span><span 
+class="cmr-10">= </span><span 
+class="cmsy-10">&#x27E8;</span><span 
+class="cmmi-10">s,t</span><span 
+class="cmsy-10">&#x27E9; </span>and then the remaining <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= 0 </span>with the probability
+<span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">st</span></sub></sup>. Hence, the left edges form <span 
+class="cmmi-10">K </span>connected components as <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><span 
+class="cmmi-10">,</span><span 
+class="cmbx-10">X</span><span 
+class="cmr-10">) = </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">cp</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">i </span><span 
+class="cmr-10">= 1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc91x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,K,</span> with  <span 
+class="cmsy-10">&#x222A;</span><sub><span 
+class="cmmi-7">i</span><span 
+class="cmr-7">=1</span></sub><sup><span 
+class="cmmi-7">K</span></sup><span 
+class="cmmi-10">cp</span><sub><span 
+class="cmmi-7">i</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10"><img 
+src="cmsy10-56.png" alt="V" class="10x-x-56" />}</span>.
+Each connected component is a set of lattice with the same label.<br 
+class="newline" />2. the flipping step: randomly assign each connected component with a new label.<br 
+class="newline" />Select one connected component <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmmi-7">o</span></sub> <span 
+class="cmsy-10">&#x2208;</span> <span 
+class="cmbx-10">CP</span> at random and assign a common label <span 
+class="cmmi-10">l </span>to all lattice in <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmmi-7">o</span></sub>. The new label <span 
+class="cmmi-10">l </span>follows
+a discrete uniform distribution,
+<table 
+class="equation-star"><tr><td>
+                          <span 
+class="cmmi-10">x</span><sub><span 
+class="cmmi-7">s</span></sub><sup><span 
+class="cmr-7">(</span><span 
+class="cmmi-7">t</span><span 
+class="cmr-7">+1)</span></sup> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">l,</span><span 
+class="cmsy-10">&#x2200;</span><span 
+class="cmmi-10">s </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">V</span> <sub>
+<span 
+class="cmmi-7">o</span></sub><span 
+class="cmmi-10">,l </span><span 
+class="cmsy-10">~ </span><span 
+class="cmmi-10">Uniform</span><span 
+class="cmsy-10">{</span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">,</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,</span><img 
+src="mcmc92x.png" alt="&#x22C5;&#x22C5;&#x22C5;"  class="@cdots" ><span style="margin-left:0.3em" class="thinspace"></span><span 
+class="cmmi-10">,L</span><span 
+class="cmsy-10">}</span>
+</td></tr></table>
+<!--l. 404--><p class="nopar" >
+                                                                                         
+                                                                                         
+</div><hr class="endfloat" />
+</div>
+<!--l. 407--><p class="noindent" >Next, we want to show that the SW algorithm can be interpreted as a Metroplis-Hastings step with acceptance rate <span 
+class="cmr-10">1</span>.
+<hr class="figure"><div class="figure" 
+>
+                                                                                         
+                                                                                         
+<a 
+ id="x1-8002r1"></a>
+                                                                                         
+                                                                                         
+<!--l. 410--><p class="noindent" ><img 
+src="figure/sw1.png" alt="PIC"  
+width="281" height="281" >
+<br /> <div class="caption" 
+><span class="id">Figure&#x00A0;1: </span><span  
+class="content">At each step, the SW algorithm flips a patch of vertices.</span></div><!--tex4ht:label?: x1-8002r1 -->
+                                                                                         
+                                                                                         
+<!--l. 413--><p class="noindent" ></div><hr class="endfigure">
+<!--l. 415--><p class="noindent" >As shown in Figure <a 
+href="#x1-8002r1">1<!--tex4ht:ref: fig:sw_onestep --></a>, suppose the current state is <span 
+class="cmmi-10">A </span>where <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> is connected to <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">1</span></sub>. The edges between <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> and <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">1</span></sub> are
+turned off in the clustering step with the probability <span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span></sup>, from which we form a cut <span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">01</span></sub> between <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> and <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">1</span></sub> as
+<span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">01</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">e </span><span 
+class="cmr-10">= </span><span 
+class="cmsy-10">&#x27E8;</span><span 
+class="cmmi-10">s,t</span><span 
+class="cmsy-10">&#x27E9;</span><span 
+class="cmmi-10">,s </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">,t </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmsy-10">}</span>(as crosses in figure). Similarly, if the Markov chain is currently at state <span 
+class="cmmi-10">B</span>, in order to
+achieve <span 
+class="cmmi-10">A</span>, we also form a cut <span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">02</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">e </span><span 
+class="cmr-10">= </span><span 
+class="cmsy-10">&#x27E8;</span><span 
+class="cmmi-10">s,t</span><span 
+class="cmsy-10">&#x27E9;</span><span 
+class="cmmi-10">,s </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmmi-10">,t </span><span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmsy-10">}</span>. From the setting of Metroplis-Hastings, we need to
+compute the proposal probability <span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">A </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">) </span>and <span 
+class="cmmi-10">Q</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">B </span><span 
+class="cmsy-10">&#x2192; </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">)</span>, which is difficult but their ratio can be shown
+as
+<table 
+class="equation"><tr><td><a 
+ id="x1-8003r1"></a>
+<center class="math-display" >
+<img 
+src="mcmc93x.png" alt="             -&#x03B2;|C01|
+Q(A-&#x2192;-B-) = e------= e-&#x03B2;(|C01|-|C02|)
+Q(B &#x2192;  A)   e-&#x03B2;|C02|
+" class="math-display" ></center></td><td class="equation-label">(6.1)</td></tr></table>
+<!--l. 419--><p class="nopar" >
+where <span 
+class="cmsy-10">|&#x22C5;| </span>denotes the cardinality of a set. Remarkably, the ratio of the probability distribution is also decided by the size of the
+cuts because the probability distribution counts the number of connected edges.
+<table 
+class="equation"><tr><td><a 
+ id="x1-8004r2"></a>
+<center class="math-display" >
+<img 
+src="mcmc94x.png" alt="&#x03C0;(A-)= e-&#x03B2;|C01| = e-&#x03B2;(|C01|-|C02|)
+&#x03C0;(B )  e-&#x03B2;|C02|
+" class="math-display" ></center></td><td class="equation-label">(6.2)</td></tr></table>
+<!--l. 423--><p class="nopar" >
+Hence, the acceptance rate is given by
+<table 
+class="equation"><tr><td><a 
+ id="x1-8005r3"></a>
+<center class="math-display" >
+<img 
+src="mcmc95x.png" alt="                 Q-(A-&#x2192;--B)&#x03C0;(B-)
+&#x03B1;(A &#x2192; B ) = min(1,Q (B &#x2192; A)&#x03C0;(A )) = 1
+" class="math-display" ></center></td><td class="equation-label">(6.3)</td></tr></table>
+                                                                                         
+                                                                                         
+<!--l. 427--><p class="nopar" >
+At low temperature, <span 
+class="cmmi-10">&#x03B2; </span><span 
+class="cmsy-10">&#x221D; </span><span 
+class="cmr-10">1</span><span 
+class="cmmi-10">&#x2215;T </span>and thus the SW flips large patches with acceptance rate <span 
+class="cmr-10">1</span>. Therefore, it can mix quickly even at
+critical temperatures.
+<!--l. 430--><p class="noindent" >
+<div class="proof">
+<!--l. 430--><p class="noindent" ><span class="head">
+<span 
+class="ptmri8t-">Proof.</span> </span>(<span 
+class="ptmri8t-">of Equation </span><a 
+href="#x1-8003r1"><span 
+class="ptmri8t-">6.1</span><!--tex4ht:ref: equ:proposal --></a>) Let <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) </span>and <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">) </span>be realizations of <span 
+class="cmbx-10">U </span>at state <span 
+class="cmmi-10">A </span>and state <span 
+class="cmmi-10">B</span>. In the
+clustering step, we form two sets of connected components as <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) </span>and <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">)</span>.
+<!--l. 433--><p class="noindent" >For  <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">X  </span><span 
+class="cmr-10">=  </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">)</span>,  following  the  Bernoulli  probabilities,  we  divide  the  <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> into  on  and  off  edges  as  <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub>  <span 
+class="cmr-10">=</span>
+<span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>on</sub> <span 
+class="cmsy-10">&#x222A; </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub>, where <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>on</sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">= 1</span><span 
+class="cmsy-10">} </span>and <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">e</span></sub> <span 
+class="cmr-10">= 0</span><span 
+class="cmsy-10">}</span>.
+<!--l. 435--><p class="noindent" >However, we are only interested in those <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> which are able to yield <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub>. We collect all such <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> including <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> given
+<span 
+class="cmmi-10">A </span>is a set, <span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) = </span><span 
+class="cmsy-10">{</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmr-10">: </span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmsy-10">&#x2208;</span> <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">)</span><span 
+class="cmsy-10">}</span>. To be concrete, in order to get <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub>, all edges between <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> and
+<span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">1</span></sub> must be cut off. We denote the remaining off edges as <sup><span 
+class="cmsy-7">-</span></sup><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub> in a sense that <sup><span 
+class="cmsy-7">-</span></sup><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub> <span 
+class="cmsy-10">&#x222A; </span><span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">01</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub> for all
+<span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">)</span>.
+<!--l. 437--><p class="noindent" >Similarly, we have <sup><span 
+class="cmsy-7">-</span></sup><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B,</span>off</sub> as <sup><span 
+class="cmsy-7">-</span></sup><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B,</span>off</sub> <span 
+class="cmsy-10">&#x222A; </span><span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">02</span></sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B,</span>off</sub> for all <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">)</span>.
+<!--l. 439--><p class="noindent" >A key observation in this formulation is that there is a one-to-one mapping between <span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) </span>and <span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">) </span>because
+we have a one-to-one mapping between <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> and <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub> by setting <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B,</span>on</sub> <span 
+class="cmr-10">= </span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>on</sub> and <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B,</span>off</sub> <span 
+class="cmr-10">=</span> <sup><span 
+class="cmsy-7">-</span></sup><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A,</span>off</sub> <span 
+class="cmsy-10">&#x222A; </span><span 
+class="cmmi-10">C</span><sub><span 
+class="cmr-7">0</span><span 
+class="cmmi-7">,</span><span 
+class="cmr-7">2</span></sub>.
+<!--l. 441--><p class="noindent" >That is, <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> and <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub> only differ in the cuts and all these random variables inside the cuts are set as off. In other words,
+their connected components are the same <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) =</span> <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">)</span>. Similarly, any <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">B</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">) </span>has
+a one-to-one mapping to <span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub> <span 
+class="cmsy-10">&#x2208; </span><span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">)</span>.
+<!--l. 443--><p class="noindent" >Now suppose we choose <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> <span 
+class="cmsy-10">&#x2208;</span> <span 
+class="cmbx-10">CP</span><span 
+class="cmr-10">(</span><span 
+class="cmbx-10">U</span><sub><span 
+class="cmmi-7">A</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmbx-10">X </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) </span>randomly, its probability is
+<table 
+class="equation-star"><tr><td>
+    <span 
+class="cmbx-10">P</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">A</span><span 
+class="cmr-10">) =</span> <span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmbx-7">U</span><sub><span 
+class="cmmi-5">A</span></sub><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmr-7">&#x03A9;(</span><span 
+class="cmmi-7">V</span> <sub><span 
+class="cmr-5">0</span></sub><span 
+class="cmsy-7">|</span><span 
+class="cmmi-7">A</span><span 
+class="cmr-7">)</span></sub><img 
+src="mcmc96x.png" alt="------1--------
+|CP (UA |X  = A)|"  class="frac" align="middle"><span 
+class="cmex-10">&#x220F;</span>
+                       <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmbx-7">U</span><sub>
+<span 
+class="cmmi-5">A,</span>on</sub></sub><span 
+class="cmr-10">(1 </span><span 
+class="cmsy-10">- </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+     </sup><span 
+class="cmr-10">)</span><span 
+class="cmex-10">&#x220F;</span>
+  <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><sup><span 
+class="cmsy-5">-</span></sup><span 
+class="cmbx-7">U</span><sub>
+<span 
+class="cmmi-5">A,</span>off</sub></sub><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+</sup> <span 
+class="cmex-10">&#x220F;</span>
+     <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmmi-7">C</span><sub><span 
+class="cmr-5">01</span></sub></sub><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+</sup>
+</td></tr></table>
+<!--l. 444--><p class="nopar" >
+<!--l. 446--><p class="noindent" >Similarly, the probability of choose <span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub> in state <span 
+class="cmmi-10">B </span>is
+<table 
+class="equation-star"><tr><td>
+                                                                                         
+                                                                                         
+    <span 
+class="cmbx-10">P</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">V</span> <sub><span 
+class="cmr-7">0</span></sub><span 
+class="cmsy-10">|</span><span 
+class="cmmi-10">B</span><span 
+class="cmr-10">) =</span> <span 
+class="cmex-10">&#x2211;</span>
+   <sub><span 
+class="cmbx-7">U</span><sub><span 
+class="cmmi-5">B</span></sub><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmr-7">&#x03A9;(</span><span 
+class="cmmi-7">V</span> <sub><span 
+class="cmr-5">0</span></sub><span 
+class="cmsy-7">|</span><span 
+class="cmmi-7">B</span><span 
+class="cmr-7">)</span></sub><img 
+src="mcmc97x.png" alt="------1--------
+|CP (UB |X  = B)|"  class="frac" align="middle"><span 
+class="cmex-10">&#x220F;</span>
+                        <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmbx-7">U</span><sub>
+<span 
+class="cmmi-5">B,</span>on</sub></sub><span 
+class="cmr-10">(1 </span><span 
+class="cmsy-10">- </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+     </sup><span 
+class="cmr-10">)</span><span 
+class="cmex-10">&#x220F;</span>
+  <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><sup><span 
+class="cmsy-5">-</span></sup><span 
+class="cmbx-7">U</span><sub>
+<span 
+class="cmmi-5">B,</span>off</sub></sub><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+</sup> <span 
+class="cmex-10">&#x220F;</span>
+     <sub><span 
+class="cmmi-7">e</span><span 
+class="cmsy-7">&#x2208;</span><span 
+class="cmmi-7">C</span><sub><span 
+class="cmr-5">02</span></sub></sub><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><sub><span 
+class="cmmi-5">e</span></sub>
+</sup>
+</td></tr></table>
+<!--l. 447--><p class="nopar" >
+In this way, we have
+<table 
+class="equation-star"><tr><td>
+                       <img 
+src="mcmc98x.png" alt="Q-(A &#x2192;-B)
+Q (B &#x2192; A)"  class="frac" align="middle"> <span 
+class="cmr-10">=</span> <img 
+src="mcmc99x.png" alt="P-(V0|A)-
+P (V0|B)"  class="frac" align="middle"> <span 
+class="cmr-10">=</span> <img 
+src="mcmc100x.png" alt="e-&#x03B2;|C01|
+e-&#x03B2;|C02|"  class="frac" align="middle"> <span 
+class="cmr-10">= </span><span 
+class="cmmi-10">e</span><sup><span 
+class="cmsy-7">-</span><span 
+class="cmmi-7">&#x03B2;</span><span 
+class="cmr-7">(</span><span 
+class="cmsy-7">|</span><span 
+class="cmmi-7">C</span><sub><span 
+class="cmr-5">01</span></sub><span 
+class="cmsy-7">|-|</span><span 
+class="cmmi-7">C</span><sub><span 
+class="cmr-5">02</span></sub><span 
+class="cmsy-7">|</span><span 
+class="cmr-7">)</span></sup>
+</td></tr></table>
+<!--l. 449--><p class="nopar" >
+                                                                                        __
+</div>
+<h3 class="sectionHead"><span class="titlemark">7    </span> <a 
+ id="x1-90007"></a>Hamilton Monte Carlo</h3>
+<!--l. 453--><p class="noindent" ><span id="textcolor2">Kong: Just copy the original book for further understanding.</span>
+<h4 class="subsectionHead"><span class="titlemark">7.1    </span> <a 
+ id="x1-100007.1"></a>Hamilton Mechanics</h4>
+<!--l. 455--><p class="noindent" >Hamiltonian Monte Carlo (HMC) is a powerful framework for sampling from high-dimensional continuous
+distributions. Langevin Monte Carlo (LMC) is a special case of HMC that is widely used in Deep Learning
+applications. Given an <span 
+class="cmmi-10">n</span>-dimensional continuous density <span 
+class="cmmi-10">P</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">X</span><span 
+class="cmr-10">)</span>, the only requirement for implementing HMC
+is the differentiability of the energy <span 
+class="cmmi-10">U</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">X</span><span 
+class="cmr-10">) = </span><span 
+class="cmsy-10">-</span><span 
+class="cmr-10">log</span> <span 
+class="cmmi-10">P</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">X</span><span 
+class="cmr-10">)</span>. Like other MCMC methods (e.g. slice sampling,
+Swendsen-Wang cuts), HMC introduces auxiliary variables to facilitate movement in the original space. In HMC, the
+original variables represent <span 
+class="ptmri8t-">position</span>, and the auxiliary variables represent <span 
+class="ptmri8t-">momentum</span>. Each position dimension
+has a single corresponding momentum variable, so the joint space of the original and auxiliary variables has
+dimension <span 
+class="cmr-10">2</span><span 
+class="cmmi-10">n</span>, twice the size of the original space. Once the momentum variables are introduced, Hamilton&#8217;s
+Equations are used to simulate the time evolution of a physical system with potential energy <span 
+class="cmmi-10">U </span>. The properties of
+Hamilton&#8217;s Equations ensure that movement in the joint space preserves the distribution of <span 
+class="cmmi-10">P </span>in the original
+space.
+<!--l. 457--><p class="noindent" >Hamiltonian Mechanics was originally developed as an alternative but equivalent formulation of Lagrangian Mechanics, and
+both are equivalent to Newtonian Mechanics. In Hamiltonian Mechanics, the states of a physical system are represented by a
+pair of <span 
+class="cmmi-10">n</span>- dimensional variables <span 
+class="cmmi-10">q </span>and <span 
+class="cmmi-10">p</span>. The variable <span 
+class="cmmi-10">q </span>represents <span 
+class="ptmri8t-">position </span>in the system, and <span 
+class="cmmi-10">p </span>represents
+<span 
+class="ptmri8t-">momentum</span>. A joint state <span 
+class="cmr-10">(</span><span 
+class="cmmi-10">q,p</span><span 
+class="cmr-10">) </span>provides a complete description of the physical system at a single instant in
+time.
+<!--l. 459--><p class="noindent" >The evolution of a state <span 
+class="cmr-10">(</span><span 
+class="cmmi-10">q,p</span><span 
+class="cmr-10">) </span>over time is governed by a scalar-valued function <span 
+class="cmmi-10">H</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">q,p</span><span 
+class="cmr-10">) </span>representing the energy of the system,
+and a pair of partial differential equations known as Hamilton&#8217;s Equations:
+                                                                                         
+                                                                                         
+<table 
+class="align-star">
+                                        <tr><td 
+class="align-odd"><img 
+src="mcmc101x.png" alt="dq
+dt"  class="frac" align="middle"></td>                                        <td 
+class="align-even"> <span 
+class="cmr-10">=</span> <img 
+src="mcmc102x.png" alt="&#x2202;H-
+ &#x2202;p"  class="frac" align="middle"></td>                                         <td 
+class="align-label"></td>                                        <td 
+class="align-label">
+                                        </td></tr><tr><td 
+class="align-odd"><img 
+src="mcmc103x.png" alt="dp
+--
+dt"  class="frac" align="middle"></td>                                        <td 
+class="align-even"> <span 
+class="cmr-10">= </span><span 
+class="cmsy-10">-</span><img 
+src="mcmc104x.png" alt="&#x2202;H
+---
+&#x2202;q"  class="frac" align="middle"></td>                                        <td 
+class="align-label"></td>                                        <td 
+class="align-label"></td></tr></table>
+<!--l. 464--><p class="noindent" ><span 
+class="cmmi-10">H</span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">q,p</span><span 
+class="cmr-10">) </span>is often referred to as the Hamiltonian of the system, and it remains constant as <span 
+class="cmr-10">(</span><span 
+class="cmmi-10">q,p</span><span 
+class="cmr-10">) </span>evolves over
+time.
+                                                                                         
+                                                                                         
+<div class="center" 
+>
+<!--l. 483--><p class="noindent" >
+<!--l. 484--><p class="noindent" ><span 
+class="ptmb8t-x-x-144">Supplemental</span></div>
+<h4 class="likesubsectionHead"><a 
+ id="x1-110007.1"></a>Formal Definition</h4>
+<!--l. 501--><p class="noindent" >More details about this section can be found in <span class="cite">[<span 
+class="ptmb8t-">?</span>]</span>.
+<!--l. 503--><p class="noindent" >The basic building blocks of a probability theory can be formalized in the following:
+       <ol  class="enumerate1" >
+       <li 
+  class="enumerate" id="x1-11002x1">An abstract set <span 
+class="cmr-10">&#x03A9;</span>, termed <span 
+class="ptmri8t-">probability space </span>or <span 
+class="ptmri8t-">sample space</span>, whose elements <span 
+class="cmmi-10">&#x03C9; </span>are called the <span 
+class="ptmri8t-">elementary</span>
+       <span 
+class="ptmri8t-">event </span>or <span 
+class="ptmri8t-">sample point</span>.
+       </li>
+       <li 
+  class="enumerate" id="x1-11004x2">A Borel field <span 
+class="eufm-10">&#x1D509;</span> of subsets of <span 
+class="cmr-10">&#x03A9;</span>, termed <span 
+class="ptmri8t-">measurable sets </span>or <span 
+class="ptmri8t-">events</span>, in which <span 
+class="cmr-10">&#x03A9; </span>is also a member.
+       </li>
+       <li 
+  class="enumerate" id="x1-11006x3">An additive probability measure <span 
+class="cmmi-10">P </span>defined on <span 
+class="eufm-10">&#x1D509;</span></li></ol>
+<!--l. 511--><p class="noindent" >These together make the <span 
+class="ptmri8t-">probability triple </span><span 
+class="cmr-10">(&#x03A9;</span><span 
+class="cmmi-10">,</span><span 
+class="eufm-10">&#x1D509;</span><span 
+class="cmmi-10">,P</span><span 
+class="cmr-10">) </span><span id="textcolor3">TODO: what&#8217;s its physics analogy</span>.
+<!--l. 515--><p class="noindent" ><span 
+class="ptmri8t-">Why Borel field?</span>
+<!--l. 584--><p class="noindent" >
+<h4 class="likesubsectionHead"><a 
+ id="x1-120007.1"></a>Microcanonical ensembles</h4>
+<!--l. 586--><p class="noindent" >MCE focus on systems that are mechanically and adiabatically isolated from its environment (<span 
+class="cmr-10">&#x0394;</span><span 
+class="cmmi-10">E </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">W </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">Q </span><span 
+class="cmr-10">= 0</span>). The
+general coordinates <img 
+src="mcmc105x.png" alt="&#x20D7;x"  class="vec" > is fixed, so that there is no work done i.e. <span 
+class="cmmi-10">W </span><span 
+class="cmr-10">= 0</span>; Internal energy <span 
+class="cmmi-10">E </span>is also fixed since
+<span 
+class="cmmi-10">Q </span><span 
+class="cmr-10">= 0 </span><span 
+class="cmsy-10">&#x21D2; </span><span 
+class="cmr-10">&#x0394;</span><span 
+class="cmmi-10">E </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">Q </span><span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">W </span><span 
+class="cmr-10">= 0</span>. This is the <span 
+class="ptmri8t-">macrostate </span>given <span 
+class="cmmi-10">E,</span><img 
+src="mcmc106x.png" alt="&#x20D7;x"  class="vec" >, denoted by <span 
+class="cmmi-10">M </span><span 
+class="cmsy-10">&#x2261; </span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">E,</span><img 
+src="mcmc107x.png" alt="&#x20D7;x"  class="vec" ><span 
+class="cmr-10">)</span>. <span 
+class="ptmri8t-">The corresponding set of mixed</span>
+<span 
+class="ptmri8t-">microstates form the microcanonical ensemble</span>.
+<!--l. 588--><p class="noindent" >A microstate in the phase space is labeled by <span 
+class="cmmi-10">&#x03BC; </span>i.e. phase space coordinate <span 
+class="cmmi-10">&#x03BC; </span><span 
+class="cmsy-10">&#x2261; </span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">x</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,p</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">,</span><span 
+class="cmmi-10">&#x2026;</span><span 
+class="cmmi-10">,x</span><sub><span 
+class="cmmi-7">N</span></sub><span 
+class="cmmi-10">,p</span><sub><span 
+class="cmmi-7">N</span></sub><span 
+class="cmr-10">)</span>, whose time evolution is
+governed by <span 
+class="cmsy-10"><img 
+src="cmsy10-48.png" alt="H" class="10x-x-48" /></span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">&#x03BC;</span><span 
+class="cmr-10">)</span>. In MCE, the Hamiltonian conserves the total energy of a given system, so all valid microstates are confined
+to the surface <span 
+class="cmsy-10"><img 
+src="cmsy10-48.png" alt="H" class="10x-x-48" /></span><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">&#x03BC;</span><span 
+class="cmr-10">) = </span><span 
+class="cmmi-10">E</span>. The central postulate of Statmech states that the equilibrium probability distribution is given
+by:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12001r1"></a>
+<center class="math-display" >
+<img 
+src="mcmc108x.png" alt="          1     {1, forH(&#x03BC;) = E
+P(E,&#x20D7;x) = -------&#x22C5;
+        &#x03A9;(E,&#x20D7;x)   0, otherwise
+" class="math-display" ></center></td><td class="equation-label">(S1)</td></tr></table>
+<!--l. 595--><p class="nopar" >
+<!--l. 597--><p class="noindent" ><span 
+class="ptmb8t-">The zeroth law</span>
+                                                                                         
+                                                                                         
+<!--l. 599--><p class="noindent" >Consider two microcanonical systems (each with a large dof), their state in phase space are <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">1</span></sub> and <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">2</span></sub> respectively. We allow
+them to exchange energy but not work. Remember these are systems modeled by MCE, so their state <span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmmi-7">i</span></sub> is determined by
+internal energy <span 
+class="cmmi-10">E</span><sub><span 
+class="cmmi-7">i</span></sub> and <img 
+src="mcmc109x.png" alt="&#x20D7;x"  class="vec" > only.
+<!--l. 601--><p class="noindent" >The combined system has energy:
+<table 
+class="equation-star"><tr><td>
+                                       <span 
+class="cmmi-10">E </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">.</span>
+</td></tr></table>
+<!--l. 604--><p class="nopar" >
+For this big system, (at any moment), its position in phase space is spanned by <span 
+class="cmmi-10">&#x03BC; </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmsy-10">&#x2297; </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">2</span></sub>. Therefore the Hamiltonian is
+described by:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12002r2"></a>
+<center class="math-display" >
+<img 
+src="mcmc110x.png" alt="H (&#x03BC;1 &#x2297; &#x03BC;2) = H1 (&#x03BC;1)+ H2(&#x03BC;2)
+" class="math-display" ></center></td><td class="equation-label">(S2)</td></tr></table>
+<!--l. 608--><p class="nopar" >
+and
+<table 
+class="equation"><tr><td><a 
+ id="x1-12003r3"></a>
+<center class="math-display" >
+<img 
+src="mcmc111x.png" alt="                   {
+             --1--  1   for H1(&#x03BC;1)+ H2(&#x03BC;2) = E
+PE(&#x03BC;1 &#x2297; &#x03BC;2) = &#x03A9;(E ) &#x22C5; 0 otherwise
+" class="math-display" ></center></td><td class="equation-label">(S3)</td></tr></table>
+<!--l. 616--><p class="nopar" >
+<span 
+class="ptmb8t-">Note: Here the Big system itself is viewed as a MCE! </span>Now we count how many states <span 
+class="cmmi-10">&#x03BC; </span><span 
+class="cmr-10">= </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmsy-10">&#x2297; </span><span 
+class="cmmi-10">&#x03BC;</span><sub><span 
+class="cmr-7">2</span></sub> are possible. For each
+pair of <span 
+class="cmsy-10">{</span><span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmsy-10">±</span><span 
+class="cmmi-10">dE</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmmi-10">&#x2215;</span><span 
+class="cmr-10">2</span><span 
+class="cmmi-10">,E</span><sub><span 
+class="cmr-7">2</span></sub> <span 
+class="cmsy-10">±</span><span 
+class="cmmi-10">dE</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmmi-10">&#x2215;</span><span 
+class="cmr-10">2</span><span 
+class="cmsy-10">}</span>, there are <span 
+class="cmr-10">&#x03A9;</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">1</span></sub><span 
+class="cmr-10">) </span><span 
+class="cmsy-10">&#x00D7; </span><span 
+class="cmr-10">&#x03A9;</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmr-10">(</span><span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">2</span></sub><span 
+class="cmr-10">) </span>states. Therefore the total allowed states for the Big system
+is:
+                                                                                         
+                                                                                         
+<table 
+class="equation"><tr><td><a 
+ id="x1-12004r4"></a>
+<center class="math-display" >
+<img 
+src="mcmc112x.png" alt="       &#x222B;
+&#x03A9; (E ) =   dE1&#x03A9;1(E1)&#x03A9;2(E - E1)
+" class="math-display" ></center></td><td class="equation-label">(S4)</td></tr></table>
+<!--l. 620--><p class="nopar" >
+we can write <span 
+class="cmr-10">&#x03A9; </span>as <span 
+class="cmr-10">&#x03A9; =</span> <span 
+class="cmr-10">exp</span><img 
+src="mcmc113x.png" alt="{log(&#x03A9;)}"  class="left" align="middle"> <span 
+class="cmr-10">=</span> <span 
+class="cmr-10">exp</span><img 
+src="mcmc114x.png" alt="{S &#x2215;kB}"  class="left" align="middle">, so:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12005r5"></a>
+<center class="math-display" >
+<img 
+src="mcmc115x.png" alt="       &#x222B;        {                  }
+&#x03A9; (E ) =  dE1 exp S1(E1)-+-S2(E---E1)
+                         kB
+" class="math-display" ></center></td><td class="equation-label">(S5)</td></tr></table>
+<!--l. 624--><p class="nopar" >
+According to (3), all states are equal weighted, therefore the energy that produces largest <span 
+class="cmr-10">&#x03A9;(</span><span 
+class="cmmi-10">E</span><span 
+class="cmr-10">) </span>is the equilibrium energy we are
+looking for. Since the integrand is exponentially large, we expect the mean contribution is from the peak defined at <span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">1</span></sub><sup><span 
+class="cmsy-7">*</span></sup>, so that
+<span 
+class="cmmi-10">S</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">S</span><sub><span 
+class="cmr-7">2</span></sub> is maximized, thus the total entropy is maximized:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12006r6"></a>
+<center class="math-display" >
+<img 
+src="mcmc116x.png" alt="S (E) = kB log &#x03A9;(E) &#x2243; S1(E *1)+ S2(E*2)ismaximized
+" class="math-display" ></center></td><td class="equation-label">(S6)</td></tr></table>
+<!--l. 628--><p class="nopar" >
+Now we find <span 
+class="cmmi-10">E</span><sub><span 
+class="cmr-7">1</span></sub> that maximize <span 
+class="cmmi-10">S</span><sub><span 
+class="cmr-7">1</span></sub> <span 
+class="cmr-10">+ </span><span 
+class="cmmi-10">S</span><sub><span 
+class="cmr-7">2</span></sub>:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12007r7"></a>
+                                                                                         
+                                                                                         
+<center class="math-display" >
+<img 
+src="mcmc117x.png" alt="-&#x2202;--(S (E  )+ S (E - E  )) = &#x2202;S1-+ &#x2202;S2(E---E1)
+&#x2202;E1   1  1    2      1    &#x2202;E1       &#x2202;E1
+       &#x2202;S1-  &#x2202;S2-
+    =  &#x2202;E1 - &#x2202;E2 = 0
+" class="math-display" ></center></td><td class="equation-label">(S7)</td></tr></table>
+<!--l. 636--><p class="nopar" >
+therefore:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12008r8"></a>
+<center class="math-display" >
+<img 
+src="mcmc118x.png" alt="&#x2202;S1-= &#x2202;S2-
+&#x2202;E1   &#x2202;E2
+" class="math-display" ></center></td><td class="equation-label">(S8)</td></tr></table>
+<!--l. 640--><p class="nopar" >
+which must be satisfied when the joint system reach the equilibrium! It is consistent with zeroth law, that systems in
+equilibrium has equal temperautre:
+<table 
+class="equation"><tr><td><a 
+ id="x1-12009r9"></a>
+<center class="math-display" >
+<img 
+src="mcmc119x.png" alt="&#x2202;S     1
+---|x =--
+&#x2202;E     T
+" class="math-display" ></center></td><td class="equation-label">(S9)</td></tr></table>
+<!--l. 644--><p class="nopar" >
+note they are evaluated at their own fixed <span 
+class="ptmb8t-">x</span>.
+<!--l. 649--><p class="noindent" >
+<h4 class="likesubsectionHead"><a 
+ id="x1-130007.1"></a>Canonical ensembles</h4>
+                                                                                         
+                                                                                         
+<div class="center" 
+>
+<!--l. 652--><p class="noindent" >
+<!--l. 653--><p class="noindent" ><span 
+class="ptmb8t-x-x-144">The story of sampling</span></div>
+<!--l. 655--><p class="noindent" >This part, I will recap the history of sampling from the posterior distribution, which is a unique chance to grasp the main idea of
+sampling in statistics. Thanks S. Feng.
+<!--l. 657--><p class="noindent" >In history, with the power of Central Limit Theorem, we can use a single point estimate for a parameter and its standard error.
+(<span id="textcolor4">Kong: CLT talks about asymptotic normality of a distribution, but why we call it a single point estimation and does it has
+anything to do with estimate of sample mean?</span>) However, in the view of Bayesian analysis, we seek to summarize the entire
+posterior distribution. The key difference lies in that here Bayesian tends to use entire posterior distribution rather than the
+mode of likelihood function and standard errors. In the same way, if we are able to summarize the entire posterior distribution
+for a parameter, there is no need to rely on asymptotic arguments about the normality of the distribution: It can be directly
+assessed.
+ 
+</body></html> 
+
+                                                                                         
+                                                                                         
+                                                                                         
+
+
