@@ -145,6 +145,7 @@ figcaption {
     header {
         flex-wrap: wrap;
         padding: 10px 5%;
+        justify-content: center; /* Center the items in the header */
     }
 
     .nav__links {
@@ -207,6 +208,7 @@ figcaption {
 
     header {
         padding: 15px 5%;
+        justify-content: center; /* Center the items in the header */
     }
 
     .nav__links {
@@ -221,3 +223,4 @@ figcaption {
         width: 50%;
     }
 }
+
