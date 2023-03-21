@@ -120,3 +120,85 @@ figcaption {
     font-style: italic;
     color: #29627e;
 }
+
+
+/* Media Queries for Mobile Responsiveness */
+@media screen and (max-width: 768px) {
+    .texts, .publist, .pub {
+        padding: 30px 5%;
+    }
+
+    header {
+        flex-wrap: wrap;
+        padding: 10px 5%;
+    }
+
+    .nav__links {
+        text-align: center;
+        margin-top: 10px;
+    }
+
+    .nav__links li {
+        display: block;
+        padding: 5px 0;
+    }
+
+    button {
+        margin-left: 0;
+        margin-top: 10px;
+    }
+
+    .name {
+        text-align: center;
+        width: 100%;
+        margin-bottom: 10px;
+    }
+
+    aside {
+        width: 100%;
+        padding
+        padding-left: 1rem;
+        margin-left: 0;
+        float: none;
+        box-shadow: none;
+    }
+    aside > p {
+        margin: .5rem 0;
+    }
+
+    /* Adjust font sizes */
+    .navbar, button {
+        font-size: 18px;
+    }
+
+    .texts, .publist, .pub {
+        font-size: 16px;
+    }
+
+    .name font {
+        font-size: 4;
+    }
+
+    .nav__links font {
+        font-size: 3;
+    }
+}
+
+/* Media Queries for Larger Mobile Devices and Tablets */
+@media screen and (min-width: 769px) and (max-width: 1024px) {
+    .texts, .publist, .pub {
+        padding: 30px 10%;
+    }
+
+    header {
+        padding: 15px 5%;
+    }
+
+    .nav__links li {
+        padding: 0px 10px;
+    }
+
+    aside {
+        width: 50%;
+    }
+}
