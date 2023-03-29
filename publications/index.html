@@ -6,7 +6,62 @@
 		<meta name="viewport" content="width=device-width" />
 		<title>Shi Feng's Research</title>
 	</head>
+	    <style>
+		.publications-container {
+		    font-family: Arial, sans-serif;
+		    line-height: 1.5;
+		    font-size: 18px;
+		    padding: 30px 20%;
+		}
 
+		.publication-list {
+		    counter-reset: publication-counter; /* Set the initial value later in the script */
+		}
+
+		.publication {
+		    margin-bottom: 1.5em;
+		    padding-left: 2em;
+		    position: relative;
+		}
+
+		.publication::before {
+		    counter-increment: publication-counter -1;
+		    content: counter(publication-counter, decimal) ". ";
+		    font-weight: bold;
+		    position: absolute;
+		    left: 0;
+		    top: 0;
+		}
+
+		.authors {
+		    margin-bottom: 0.25em;
+		}
+
+		.my-name {
+		    font-weight: bold;
+		}
+
+		.title {
+		    font-style: italic;
+		    margin-bottom: 0.25em;
+		}
+
+		.journal {
+		    color: #0088a9;
+		}
+
+		.journal-link {
+		    color: inherit;
+		    text-decoration: none;
+		}
+
+		.journal-link:hover {
+		    text-decoration: underline;
+		}
+	    </style>
+	    
+	    
+	    
 	<body>
 		<header class="navbar">
 			<div class="name"><font size=5>Shi Feng's homepage</font></div>	
@@ -23,16 +78,78 @@
 				</font>
 			</nav>
 		</header>
-		<h1 class="publist">Publications</h1>
-		<li class="publist"> [9] <b>S. Feng</b>, A. Agarwala, N. Trivedi. Dimensional transition from Kitaev spin liquid to decoupled Ising critical chains. In preparation</li>
-		<li class="publist"> [8] <b>S. Feng</b>, D. Kong, N. Trivedi. A statistical approach to topological entanglement: Boltzmann machine representation of higher-order irreducible correlation. <a href="https://arxiv.org/abs/2302.03212">arXiv:2302.03212 (2023)</a></li>
-		<li class="publist"> [7] <b>S. Feng</b>, A. Agarwala, S. Bhattacharjee, N. Trivedi. Anyon dynamics in field-driven phases of the anisotropic Kitaev model. <a href="https://arxiv.org/abs/2206.12990">arXiv:2206.12990 (2022)</a></li>
-		<li class="publist"> [6] <b>S. Feng</b>, Y. He, N. Trivedi. Detection of long-range entanglement in gapped quantum spin liquids by local measurements. <a href="https://journals.aps.org/pra/abstract/10.1103/PhysRevA.106.042417">Phys. Rev. A 106, 042417 (2022)</a> </li>
-		<li class="publist"> [5] <b>S. Feng</b>, G. Alvarez, N. Trivedi. Gapless to gapless phase transitions in quantum spin chains. <a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.105.014435">Phys. Rev. B 105, 014435 (2022)</a></li>
-		<li class="publist"> [4] <b>S. Feng</b>, N. D. Patel, P. Kim, J. H. Han, N. Trivedi. Magnetic phase transitions in quantum spin-orbital liquids. <a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.101.155112">Phys. Rev. B, 101:155112 (2020)</a></li>
-		<li class="publist"> [3] T. Xiao, J. Wang, S. Yang, Y. Zhu, D. Li, Z. Wang, <b>S. Feng</b>, L. Bu, X. Zhan, G. Lu. Film-depth-dependent Crystallinity for Light Transmission and Charge Transport in Semitransparent Organic Solar Cells. <a href="https://pubs.rsc.org/en/content/articlelanding/2020/ta/c9ta11613c">Journal of Materials Chemistry, A, 2020, 8, 401 (2020)</a></li>
-		<li class="publist"> [2] D. Li, S. Li, W. Lu, <b>S. Feng</b>, P. Wei, Y. Hu, X. Wang, G. Lu. Rapidly measuring charge carrier mobility of organic semiconductor films upon a point-contact four-probes Method. <a href="https://ieeexplore.ieee.org/document/8476973" >IEEE J-EDS 2018.2872714 (2018)</a></li>
-		<li class="publist"> [1] L. Bu, S. Gao, W. Wang, L. Zhou, <b>S. Feng</b>, X. Chen, D. Yu, S. Li, G. Lu. Film-depth-dependent light absorption and charge transport for polymer electronics. <a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/aelm.201600359">Adv. Electron. Mater 2:1600359 (2016)</a></li>
+		
+		
+		
+		
+		    <div class="publications-container">
+			<h2>Publication List</h2>
+			<br>
+
+			<div class="publication-list">
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, A. Agarwala, N. Trivedi</p>
+				<p class="title">Dimensional transition from Kitaev spin liquid to decoupled Ising critical chains</p>
+				<p class="journal">In preparation</p>
+			    </div>
+
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, D. Kong, N. Trivedi</p>
+				<p class="title">A statistical approach to topological entanglement: Boltzmann machine representation of higher-order irreducible correlation</p>
+				<p class="journal"><a href="https://arxiv.org/abs/2302.03212" class="journal-link">arXiv:2302.03212 (2023)</a></p>
+			    </div>
+
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, A. Agarwala, S. Bhattacharjee, N. Trivedi</p>
+				<p class="title">Anyon dynamics in field-driven phases of the anisotropic Kitaev model</p>
+				<p class="journal"><a href="https://arxiv.org/abs/2206.12990" class="journal-link">arXiv:2206.12990 (2022)</a></p>
+			    </div>
+			    
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, Y. He, N. Trivedi</p>
+				<p class="title">Detection of long-range entanglement in gapped quantum spin liquids by local measurements</p>
+				<p class="journal"><a href="https://journals.aps.org/pra/abstract/10.1103/PhysRevA.106.042417" class="journal-link">Phys. Rev. A 106, 042417 (2022)</a></p>
+			    </div> 
+			    
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, G. Alvarez, N. Trivedi</p>
+				<p class="title">Gapless to gapless phase transitions in quantum spin chains</p>
+				<p class="journal"><a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.105.014435" class="journal-link">Phys. Rev. B 105, 014435 (2022)</a></p>
+			    </div> 
+			    
+			    <div class="publication">
+				<p class="authors"><span class="my-name">S. Feng</span>, N. D. Patel, P. Kim, J. H. Han, N. Trivedi</p>
+				<p class="title">Magnetic phase transitions in quantum spin-orbital liquids</p>
+				<p class="journal"><a href="https://journals.aps.org/prb/abstract/10.1103/PhysRevB.101.155112" class="journal-link">Phys. Rev. B 101, 155112 (2020)</a></p>
+			    </div> 
+			    
+			    <div class="publication">
+				<p class="authors">T. Xiao, J. Wang, S. Yang, Y. Zhu, D. Li, Z. Wang, <span class="my-name">S. Feng</span>, L. Bu, X. Zhan, G. Lu</p>
+				<p class="title">Film-depth-dependent Crystallinity for Light Transmission and Charge Transport in Semitransparent Organic Solar Cells</p>
+				<p class="journal"><a href="https://pubs.rsc.org/en/content/articlelanding/2020/ta/c9ta11613c" class="journal-link">Journal of Materials Chemistry, A, 2020, 8, 401 (2020)</a></p>
+			    </div> 
+			    
+			    <div class="publication">
+				<p class="authors">D. Li, S. Li, W. Lu, <span class="my-name">S. Feng</span>, P. Wei, Y. Hu, X. Wang, G. Lu</p>
+				<p class="title">Rapidly measuring charge carrier mobility of organic semiconductor films upon a point-contact four-probes Method</p>
+				<p class="journal"><a href="https://ieeexplore.ieee.org/document/8476973" class="journal-link">IEEE J-EDS 2018.2872714 (2018)</a></p>
+			    </div> 
+
+			    <div class="publication">
+				<p class="authors">L. Bu, S. Gao, W. Wang, L. Zhou, <span class="my-name">S. Feng</span>, X. Chen, D. Yu, S. Li, G. Lu</p>
+				<p class="title">Film-depth-dependent light absorption and charge transport for polymer electronics: A Case Study on Semiconductor/Insulator Blends by Plasma Etching</p>
+				<p class="journal"><a href="https://onlinelibrary.wiley.com/doi/abs/10.1002/aelm.201600359" class="journal-link">Adv. Electron. Mater 2:1600359 (2016)</a></p>
+			    </div> 			    
+			</div>
+		    </div>
+    
+		    <script>
+			// Set the initial value of the counter
+			const publicationList = document.querySelector('.publication-list');
+			const numPublications = publicationList.childElementCount;
+			publicationList.style.counterReset = `publication-counter ${numPublications + 1}`;
+		    </script>
+    
 		
 		<p class="texts">
 			<strong>Quantum Spin Liquids</strong>			
