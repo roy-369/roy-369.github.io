@@ -1,5 +1,5 @@
 # Fdb version 3
-["pdflatex"] 1641880669 "draft.tex" "draft.pdf" "draft" 1641880669
+["pdflatex"] 1683043185 "draft.tex" "draft.pdf" "draft" 1683043185
   "/etc/texmf/web2c/texmf.cnf" 1601418961 588 5b8801f05ed417be94ccd092872efffe ""
   "/usr/share/texlive/texmf-dist/fonts/map/fontname/texfonts.map" 1577235249 3524 cb3e574dea2d1052e39280babc910dc8 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/amsfonts/cmextra/cmex7.tfm" 1246382020 1004 54797486969f23fa377b128694d548df ""
@@ -11,6 +11,7 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/bbold/bbold10.tfm" 1266369035 788 aa2bfd021367054a224c4cf5a9967398 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/bbold/bbold6.tfm" 1266369035 764 bc340104b2499eb440977e2d302aad8b ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/bbold/bbold8.tfm" 1266369035 768 b3927d32cc38bf306f676b7e9ddf7414 ""
+  "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmbx12.tfm" 1136768653 1324 c910af8c371558dc20f2d7822f66fe64 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmex10.tfm" 1136768653 992 662f679a0b3d2d53c1b94050fdaa3f50 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi10.tfm" 1136768653 1528 abec98dbc43e172678c11b3b9031252a ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmmi12.tfm" 1136768653 1524 4414a8315f39513458b80dfc63bff03a ""
@@ -24,6 +25,7 @@
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy10.tfm" 1136768653 1124 6c73e740cf17375f03eec0ee63599741 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy6.tfm" 1136768653 1116 933a60c408fc0a863a92debe84b2d294 ""
   "/usr/share/texlive/texmf-dist/fonts/tfm/public/cm/cmsy8.tfm" 1136768653 1120 8b7d695260f3cff42e636090a8002094 ""
+  "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmbx12.pfb" 1248133631 32080 340ef9bf63678554ee606688e7b5339d ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmex10.pfb" 1248133631 30251 6afa5cb1d0204815a708a080681d4674 ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmmi10.pfb" 1248133631 36299 5f9df58c2139e7edcf37c8fca4bd384d ""
   "/usr/share/texlive/texmf-dist/fonts/type1/public/amsfonts/cm/cmr10.pfb" 1248133631 35752 024fb6c41858982481f6968b5fc26508 ""
@@ -178,11 +180,11 @@
   "/usr/share/texmf/web2c/texmf.cnf" 1581979058 38841 ce3692aa899bb693b90b87eaa5d4d84e ""
   "/var/lib/texmf/fonts/map/pdftex/updmap/pdftex.map" 1587762342 4770781 1ed1abab22da9c3e2cc82e4db562318b ""
   "/var/lib/texmf/web2c/pdftex/pdflatex.fmt" 1587762355 8256068 d45c65b94b57f8333f54ac8fbe0ae1b9 ""
-  "draft.aux" 1641880625 683 d3c70fb25d669a5b0fdbe8ecca9b96a1 "pdflatex"
-  "draft.out" 1641880625 0 d41d8cd98f00b204e9800998ecf8427e "pdflatex"
-  "draft.tex" 1641880668 3424 1a41df74c48b634f2992769ce6294c3a ""
+  "draft.aux" 1683043178 919 ef3a0b174d1bfcac0853a3a1346fafca "pdflatex"
+  "draft.out" 1683043178 112 95614a1b8f2bbc410f79a31ce598f082 "pdflatex"
+  "draft.tex" 1683043184 4683 ea4b0d6b1badd16405d3eacb6a1b05a2 ""
   (generated)
-  "draft.aux"
   "draft.log"
-  "draft.out"
+  "draft.aux"
   "draft.pdf"
+  "draft.out"

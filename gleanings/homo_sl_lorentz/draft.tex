@@ -31,11 +31,12 @@
 \bibliographystyle{naturemag}
 \usepackage{doi}
 \newcommand{\todo}[1]{\textcolor{red}{TODO: #1}}
-\title{A Homomorphism between SL(2,C) and Lorentz Group}
+\title{The homomorphism between SL(2,C) and Lorentz Group}
 \author{Shi Feng}
 \date{}
 \begin{document}
 \maketitle
+\section{The homomorphism}
 A homomorphism exist between $SL(2,\mathbb{C})$ and Lorentz group. Let  $M = \mathbb{R}^4$ be the 4-d Minkowski space with Lorentz metric:
 \begin{equation}
 	\norm{x}^2 = x_0^2 - x_1^2 - x_2^2 - x_3^2,\;\;\text{with}\;\;\; x = 
@@ -72,7 +73,7 @@ so the new $AxA^\dagger$ is also self-adjoint. Notice also that
 \begin{equation}
 	\norm{\phi(A)x}^2 = \det(AxA^\dagger) = \abs{\det(A)}^2 \det(x)
 \end{equation}
-is $A \in SL(2,\mathbb{C})$, then
+if $A \in SL(2,\mathbb{C})$, then
 \begin{equation}
 	\norm{\phi(A)x}^2 = \norm{x}^2
 \end{equation}
@@ -85,6 +86,52 @@ so that
 	\phi(AB)x = \phi(A)\phi(B)x
 \end{equation}
 Thus $\phi$ is a homomorphism! Also note that $\phi(-A) = \phi(A)$ so this map is not one-to-one, i.e. $\pm A$ shall be mapped to the same Lorentz transformation by  $\phi$.
+
+
+\section{Weyl Spinor Representation}
+The action by conjugation defined previously for the homeomorphism already indicates a spinor decomposition of the vector:
+\begin{equation}
+	\phi(A)x \equiv AxA^\dagger \equiv (A\psi)(\psi^\dagger A^\dagger) = (A\psi)(A\psi)^\dagger, ~~A \in SL(2, \mathbb{C})
+\end{equation}
+where the vector $x$ is decomposed into spinors  $x \equiv \psi \psi^\dagger$. Here we can imagine $\psi$ is a two-by-one column vector, and  $\psi \psi^\dagger$ gives the aforementioned two-by-two matrix representation of the four-vector $x$.  It is in this sense that one may perceive a spinor as ``the square root" of a vector. 
+Now we would like to know what is the spinor decomposition explicitly in this case, which can be readily solved by simple linear algebra as follows. The linear equation in question is simiply:
+\begin{equation}
+	\begin{pmatrix}
+		\psi_1 \\ \psi_2
+	\end{pmatrix}
+	\begin{pmatrix}
+		\psi_1^* & \psi_2^*
+	\end{pmatrix}
+	=
+	\begin{pmatrix}
+		x_0 + x_3 & x_1 - ix_2 \\
+		x_1 + ix_2 & x_1 - x_3
+	\end{pmatrix}
+\end{equation}
+note that $x_0 + x_3 \in \mathbb{R}$, so that  $\psi_1^* = c_1\psi_1^*$ with $c_1$ a real scalor. Similarly, we have $\psi_2^* = c_2 \psi_2^*$
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 %\nocite{*}
